@@ -15,7 +15,6 @@ or by setting a command line option to not capture performance data in the first
 ## Install Prerequisites
 
 These are also required for building JDK 11, so your efforts won't be wasted here.
-I hope to revise this part to avoid system-wide installation so root isn't required.
 
 Install XCode 10, autoconf, freetype and mercurial
 Install a bootstrap JDK; either JDK7 or 8.  
@@ -26,13 +25,13 @@ curl -O -L http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
 tar -xzf autoconf-2.69.tar.gz
 cd autoconf-2.69
 ./configure
-sudo make install
+sudo make
 
 curl -O https://nongnu.freemirror.org/nongnu/freetype/freetype-2.9.tar.gz
 tar -xvf freetype-2.9.tar.gz
 cd freetype-2.9
 ./configure
-sudo make install
+sudo make
 
 curl -O https://www.mercurial-scm.org/release/mercurial-4.9rc0.tar.gz
 tar -xvf mercurial-4.9rc0.tar.gz
@@ -43,7 +42,7 @@ make local
 ## download the JDK and all subrepos
 
 ```
-hg clone http://hg.openjdk.java.net/jdk8u/jdk8u-dev/jdk jdk8u-dev
+hg clone http://hg.openjdk.java.net/jdk8u/jdk8u-dev jdk8u-dev
 cd jdk8u-dev
 chmod 755 get_source.sh configure
 ./get_source.sh
