@@ -1,0 +1,42 @@
+diff --git a/make/lib/CoreLibraries.gmk b/make/lib/CoreLibraries.gmk
+--- a/make/lib/CoreLibraries.gmk
++++ b/make/lib/CoreLibraries.gmk
+@@ -436,13 +436,13 @@
+     INCLUDE_FILES := $(BUILD_LIBJLI_FILES), \
+     LANG := C, \
+     OPTIMIZATION := HIGH, \
+-    CFLAGS := $(LIBJLI_CFLAGS), \
++    CFLAGS := $(LIBJLI_CFLAGS) -mmacosx-version-min=10.7.0, \
+     MAPFILE := $(JDK_TOPDIR)/make/mapfiles/libjli/mapfile-vers, \
+     LDFLAGS := $(LDFLAGS_JDKLIB) \
+         $(call SET_SHARED_LIBRARY_ORIGIN), \
+     LDFLAGS_linux := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \
+     LDFLAGS_solaris := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \
+-    LDFLAGS_macosx := -framework Cocoa -framework Security -framework ApplicationServices, \
++    LDFLAGS_macosx := -framework Cocoa -framework Security -framework ApplicationServices -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
+     LDFLAGS_SUFFIX_solaris := $(LIBZ) $(LIBDL) -lc, \
+     LDFLAGS_SUFFIX_linux := $(LIBZ) $(LIBDL) -lc -lpthread, \
+     LDFLAGS_SUFFIX_aix := $(LIBZ) $(LIBDL),\
+@@ -502,8 +502,8 @@
+       INCLUDE_FILES := $(BUILD_LIBJLI_FILES), \
+       LANG := C, \
+       OPTIMIZATION := HIGH, \
+-      CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS), \
+-      LDFLAGS := -nostdlib -r, \
++      CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
++      LDFLAGS := -nostdlib -r -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
+       OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libjli_static, \
+       DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
+ 
+diff --git a/src/macosx/native/sun/osxapp/ThreadUtilities.m b/src/macosx/native/sun/osxapp/ThreadUtilities.m
+--- a/src/macosx/native/sun/osxapp/ThreadUtilities.m
++++ b/src/macosx/native/sun/osxapp/ThreadUtilities.m
+@@ -36,7 +36,7 @@
+ static jobject appkitThreadGroup = NULL;
+ static BOOL awtEmbedded = NO;
+ 
+-inline void attachCurrentThread(void** env) {
++static inline void attachCurrentThread(void** env) {
+     if ([NSThread isMainThread]) {
+         JavaVMAttachArgs args;
+         args.version = JNI_VERSION_1_4;
