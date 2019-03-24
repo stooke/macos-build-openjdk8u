@@ -7,6 +7,8 @@ Currently (March 2019), jdk8u can only be compiled with XCode 4, which won't run
 This repo contains patches and information for setting up an environment to compile a JDK using the very latest tools.
 
 ### Caveats:
+Currently this works for me on one machine, fails on another.
+
 There is an issue during shutdown that has been solved in later JDKs, a crash in `PerfData::~PerfData()`.
 This can be avoided by (1) commenting out the code on macOS (fine if you didn't start your JVM via JNI)
 or by setting a command line option to not capture performance data in the first place.
@@ -24,14 +26,14 @@ If you have a system JDK 8 installed, the build should find it.
 curl -O -L http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
 tar -xzf autoconf-2.69.tar.gz
 cd autoconf-2.69
-./configure
-sudo make
+./configure --prefix=`pwd`
+make install
 
 curl -O https://nongnu.freemirror.org/nongnu/freetype/freetype-2.9.tar.gz
 tar -xvf freetype-2.9.tar.gz
 cd freetype-2.9
 ./configure
-sudo make
+make
 
 curl -O https://www.mercurial-scm.org/release/mercurial-4.9rc0.tar.gz
 tar -xvf mercurial-4.9rc0.tar.gz
