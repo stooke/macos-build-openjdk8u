@@ -16,9 +16,9 @@ or by setting a command line option to not capture performance data in the first
 
 These are also required for building JDK 11, so your efforts won't be wasted here.
 
-Install XCode 10, autoconf, freetype and mercurial
+Install XCode 10, autoconf, freetype and mercurial.
 Install a bootstrap JDK; either JDK 7 or JDK 8.  
-If you have a system JDK 8 installed, the build should find it
+If you have a system JDK 8 installed, the build should find it.
 
 ```
 curl -O -L http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
@@ -67,7 +67,7 @@ hg import --no-commit ../../jdk-macos.patch
 cd jdk8u-dev
 ./configure --with-toolchain-type=clang --with-boot-jdk=`pwd`/../tools/jdk8u202-b08/Contents/Home --with-freetype-include=`pwd`/../tools/freetype-2.9/include --with-freetype-lib=`pwd`/../tools/freetype-2.9/objs/.libs
 ```
-Optionally, add `--with-debug-level=slowdebug` to debug thr JDK
+Optionally, add `--with-debug-level=slowdebug` to debug the JDK
 
 ## build the JDK
 
@@ -82,8 +82,7 @@ make images COMPILER_WARNINGS_FATAL=false
 ./build/maxosx-x86_64-normal-server-slowdebug/images/j2sdk-image/bin/java
 ```
 
-Notice the crash at shutdown!
-To avoid this, use the flag `-XX:-UsePerfData`.
+Notice the crash at shutdown.  To avoid this, use the flag `-XX:-UsePerfData`.
 ```
 ./build/maxosx-x86_64-normal-server-release/images/j2sdk-image/bin/java -XX:-UsePerfData
 ```
