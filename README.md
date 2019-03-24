@@ -17,8 +17,8 @@ or by setting a command line option to not capture performance data in the first
 These are also required for building JDK 11, so your efforts won't be wasted here.
 
 Install XCode 10, autoconf, freetype and mercurial
-Install a bootstrap JDK; either JDK7 or 8.  
-If you have a system JDK 8, the build should find it
+Install a bootstrap JDK; either JDK 7 or JDK 8.  
+If you have a system JDK 8 installed, the build should find it
 
 ```
 curl -O -L http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
@@ -37,6 +37,9 @@ curl -O https://www.mercurial-scm.org/release/mercurial-4.9rc0.tar.gz
 tar -xvf mercurial-4.9rc0.tar.gz
 cd mercurial-4.9rc0/
 make local
+
+curl -O -L https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz
+tar -xvf OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz
 ```
 
 ## download the JDK and all subrepos
@@ -61,13 +64,10 @@ hg import --no-commit ../../jdk-macos.patch
 ## configure the JDK
 
 ```
-./configure --with-toolchain-type=clang
+cd jdk8u-dev
+./configure --with-toolchain-type=clang --with-boot-jdk=`pwd`/../tools/jdk8u202-b08/Contents/Home --with-freetype-include=`pwd`/../tools/freetype-2.9/include --with-freetype-lib=`pwd`/../tools/freetype-2.9/objs/.libs
 ```
-or 
-
-```
-./configure --with-toolchain-type=clang --with-debug-level=slowdebug
-```
+Optionally, add `--with-debug-level=slowdebug` to debug thr JDK
 
 ## build the JDK
 
