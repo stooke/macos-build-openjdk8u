@@ -15,6 +15,10 @@ Because of the caveats below, this patch is not in any shape for contribution to
 This can be avoided by (1) commenting out the code on macOS (fine if you didn't start your JVM via JNI)
 or by setting a command line option to not capture performance data in the first place.
 
+## The quick way
+
+Download ands run _build.sh_ from this repo
+
 ## Install Prerequisites
 
 These are also required for building JDK 11, so your efforts won't be wasted here.
