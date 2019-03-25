@@ -1,4 +1,4 @@
-# jdk8u-xcode10
+# Compiling jdk8u using XCode 10 
 
 How to compile JDK 8 with the latest Xcode on macOS Mojave
 (stooke@redhat.com, March 2019)
