@@ -36,9 +36,9 @@ cd freetype-2.9
 ./configure
 make
 
-curl -O https://www.mercurial-scm.org/release/mercurial-4.9rc0.tar.gz
-tar -xvf mercurial-4.9rc0.tar.gz
-cd mercurial-4.9rc0/
+curl -O https://www.mercurial-scm.org/release/mercurial-4.9.tar.gz
+tar -xvf mercurial-4.9.tar.gz
+cd mercurial-4.9/
 make local
 
 curl -O -L https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz
