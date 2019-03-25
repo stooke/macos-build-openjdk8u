@@ -6,7 +6,7 @@ diff --git a/make/lib/CoreLibraries.gmk b/make/lib/CoreLibraries.gmk
      LANG := C, \
      OPTIMIZATION := HIGH, \
 -    CFLAGS := $(LIBJLI_CFLAGS), \
-+    CFLAGS := $(LIBJLI_CFLAGS) -mmacosx-version-min=10.7.0, \
++    CFLAGS := $(LIBJLI_CFLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
      MAPFILE := $(JDK_TOPDIR)/make/mapfiles/libjli/mapfile-vers, \
      LDFLAGS := $(LDFLAGS_JDKLIB) \
          $(call SET_SHARED_LIBRARY_ORIGIN), \
