@@ -1,0 +1,20 @@
+diff --git a/make/bsd/makefiles/gcc.make b/make/bsd/makefiles/gcc.make
+--- a/make/bsd/makefiles/gcc.make
++++ b/make/bsd/makefiles/gcc.make
+@@ -363,7 +363,15 @@
+ # Linker flags
+ 
+ # statically link libstdc++.so, work with gcc but ignored by g++
+-STATIC_STDCXX = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
++ifeq ($(OS_VENDOR), Darwin)
++  ifneq ($(MACOSX_VERSION_MIN),"10.7.0")
++    STATIC_STDCXX = -Wl,-Bstatic -lc++ -Wl,-Bdynamic
++  else
++    STATIC_STDCXX = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
++  endif
++else
++  STATIC_STDCXX = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
++endif
+ 
+ ifeq ($(USE_CLANG),)
+   # statically link libgcc and/or libgcc_s, libgcc does not exist before gcc-3.x.
