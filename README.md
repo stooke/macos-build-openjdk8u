@@ -6,13 +6,14 @@ How to compile JDK 8 with the latest Xcode on macOS Mojave
 Currently (March 2019), jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
 This repo contains patches and information for setting up an environment to compile a JDK using the very latest tools.
 
-### Caveats:
-Currently this works for me on one machine, fails on another.
+Because of the caveats below, this patch is not in any shape for contribution to the JDK.
 
-There is an issue during shutdown that has been solved in later JDKs, a crash in `PerfData::~PerfData()`.
+### Caveats:
+- This patch only works with XCode 10.
+- This patch will produce a JDK that runs on macOS 10.9 and above; the original code runs on macOS 10.7 and above.
+- There is an issue during shutdown that has been solved in later JDKs, a crash in `PerfData::~PerfData()`.
 This can be avoided by (1) commenting out the code on macOS (fine if you didn't start your JVM via JNI)
 or by setting a command line option to not capture performance data in the first place.
-
 
 ## Install Prerequisites
 
@@ -57,10 +58,12 @@ chmod 755 get_source.sh configure
 
 ```
 cd jdk8u-dev
-hg import --no-commit ../jdkbase-macos.patch
+hg import --no-commit ../mac-jdk8u.patch
 (you might get an error in patching generated_configure.sh; ignore it or delete the file)
-cd jdk
-hg import --no-commit ../../jdk-macos.patch
+cd hotspot
+hg import --no-commit ../../mac-jdk8u-hotspot.patch
+cd ../jdk
+hg import --no-commit ../../mac-jdk8u-jdk.patch
 ```
 
 ## configure the JDK
@@ -94,3 +97,8 @@ For javac, use the `-J` option to pass this flag to the underlying JVM.
 ./build/maxosx-x86_64-normal-server-release/images/j2sdk-image/bin/javac -J-XX:-UsePerfData Foo.java
 ```
 
+## TODO
+
+- Make the patch work with XCode 9
+- Make the patch work with XCode 9 and libstdc++
+- Make the patdch work with a 'patched' XCode 10 containing libstdc++.  (i.e. copy the libstdc++ libraries and header files from an XCode 9 installation)
