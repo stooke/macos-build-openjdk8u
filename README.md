@@ -1,6 +1,6 @@
-# Compiling jdk8u using XCode 10 
+# Compiling jdk8u using XCode 9 or 10 
 
-How to compile JDK 8 with the latest Xcode on macOS Mojave
+How to compile JDK 8 with the latest Xcode on macOS Mojave (or High Sierra)
 (stooke@redhat.com, March 2019)
 
 Currently (March 2019), jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
@@ -9,7 +9,7 @@ This repo contains patches and information for setting up an environment to comp
 Because of the caveats below, this patch is not in any shape for contribution to the JDK.
 
 ### Caveats:
-- This patch only works with XCode 10.
+- This patch only works with XCode 9 or 10.
 - This patch will produce a JDK that runs on macOS 10.9 and above; the original code runs on macOS 10.7 and above.
 - There is an issue during shutdown that has been solved in later JDKs, a crash in `PerfData::~PerfData()`.
 This can be avoided by (1) commenting out the code on macOS (fine if you didn't start your JVM via JNI)
@@ -21,9 +21,9 @@ Download ands run _build.sh_ from this repo
 
 ## Install Prerequisites
 
-These are also required for building JDK 11, so your efforts won't be wasted here.
+Some of these are also required for building JDK 11, so your efforts won't be wasted here.
 
-Install XCode 10, autoconf, freetype and mercurial.
+Install XCode 9 or 10, autoconf, freetype and mercurial.
 Install a bootstrap JDK; either JDK 7 or JDK 8.  
 If you have a system JDK 8 installed, the build should find it.
 
@@ -103,6 +103,7 @@ For javac, use the `-J` option to pass this flag to the underlying JVM.
 
 ## TODO
 
-- Make the patch work with XCode 9
-- Make the patch work with XCode 9 and libstdc++
-- Make the patdch work with a 'patched' XCode 10 containing libstdc++.  (i.e. copy the libstdc++ libraries and header files from an XCode 9 installation)
+- Make a patch to comment out the crashing code until the crash is fixed
+- Fix the shutdown crash
+- Make the patch work with libstdc++
+- Make the patch work with a 'patched' XCode 10 containing libstdc++.  (i.e. copy the libstdc++ libraries and header files from an XCode 9 installation)
