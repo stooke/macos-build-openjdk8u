@@ -2,6 +2,7 @@
 
 set -x
 
+# define toolchain
 XCODE_APP=/Applications/Xcode.app
 XCODE_DEVELOPER_PREFIX=$XCODE_APP/Contents/Developer
 CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
@@ -9,44 +10,72 @@ OLDPATH=$PATH
 export PATH=$TOOL_PREFIX/usr/bin:$PATH
 export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
 
-BUILD_DIR=`pwd`
+# define JDK and repo
 JDKBASE=jdk8u-dev
-
 DEBUG_LEVEL=release
+DEBUG_LEVEL=slowdebug
 ## release, fastdebug, slowdebug
 
+# define buuld environment
+BUILD_DIR=`pwd`
+pushd `dirname $0`
+PATCH_DIR=`pwd`
+popd
 TOOL_DIR=$BUILD_DIR/tools
+DOWNLOAD_DIR=$BUILD_DIR/tools/downloads
 JDK_DIR=$BUILD_DIR/$JDKBASE
-PATCH_DIR=$TOOL_DIR/patches
 
-mkdir -p $TOOL_DIR/downloads
-
-buildtools() {
-	cd $TOOL_DIR
+build_autoconf() {
+	cd "$DOWNLOAD_DIR"
 	curl -O -L http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
-	tar -xzf autoconf-2.69.tar.gz
+	cd "$TOOL_DIR"
+	tar -xzf "$DOWNLOAD_DIR/autoconf-2.69.tar.gz"
 	cd autoconf-2.69
 	./configure --prefix=`pwd`
 	make install
+}
 
-	cd $TOOL_DIR
+build_freetype() {
+	cd "$DOWNLOAD_DIR"
 	curl -O https://nongnu.freemirror.org/nongnu/freetype/freetype-2.9.tar.gz
-	tar -xvf freetype-2.9.tar.gz
+	cd "$TOOL_DIR"
+	tar -xvf "$DOWNLOAD_DIR/freetype-2.9.tar.gz"
 	cd freetype-2.9
 	./configure
 	make
+}
 
-	cd $TOOL_DIR
+build_mercurial() {
+	cd "$DOWNLOAD_DIR"
 	curl -O https://www.mercurial-scm.org/release/mercurial-4.9.tar.gz
-	tar -xvf mercurial-4.9.tar.gz
+	cd "$TOOL_DIR"
+	tar -xvf "$DOWNLOAD_DIR/mercurial-4.9.tar.gz"
 	cd mercurial-4.9/
 	make local
+}
 
-	cd $TOOL_DIR
+build_bootstrap_jdk8() {
+	cd "$DOWNLOAD_DIR"
 	curl -O -L https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz
-	tar -xvf OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz
+	cd "$TOOL_DIR"
+	tar -xvf "$DOWNLOAD_DIR/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz"
+}
 
-	mv $TOOL_DIR/*.gz $TOOL_DIR/downloads
+build_bootstrap_jdk10() {
+	cd "$DOWNLOAD_DIR"
+	curl -O -L https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz
+	cd "$TOOL_DIR"
+	tar -xvf "$DOWNLOAD_DIR/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz"
+}
+
+buildtools() {
+	mkdir -p "$DOWNLOAD_DIR"
+	mkdir -p "$TOOL_DIR"
+
+	for tool in freetype autoconf mercurial bootstrap_jdk8 ; do 
+		echo "building $tool"
+		build_$tool
+	done
 }
 
 export PATH=$OLDPATH
@@ -65,34 +94,36 @@ downloadjdksrc() {
 }
 
 patchjdk() {
-	#git clone https://github.com/stooke/jdk8u-xcode10.git $PATCH_DIR
-	mkdir -p $PATCH_DIR
-	cp $BUILD_DIR/jdk8u-xcode10/*.patch $PATCH_DIR
-
 	cd $JDK_DIR
 	hg revert .
 	hg import --no-commit $PATCH_DIR/mac-jdk8u.patch
-	cd $JDK_DIR/hotspot
-	hg revert .
-	hg import --no-commit $PATCH_DIR/mac-jdk8u-hotspot.patch
-	cd $JDK_DIR/jdk
-	hg revert .
-	hg import --no-commit $PATCH_DIR/mac-jdk8u-jdk.patch
+	for a in hotspot jdk ; do 
+		cd $JDK_DIR/$a
+		hg revert .
+		hg import --no-commit $PATCH_DIR/mac-jdk8u-$a.patch
+	done
 }
 
-buildtools
-downloadjdksrc
-patchjdk
-
-cd $JDK_DIR
-chmod 755 ./configure
-./configure --with-toolchain-type=clang \
+configurejdk() {
+	cd $JDK_DIR
+	chmod 755 ./configure
+	./configure --with-toolchain-type=clang \
             --with-xcode-path=$XCODE_APP \
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
             --with-debug-level=$DEBUG_LEVEL \
             --with-boot-jdk=$TOOL_DIR/jdk8u202-b08/Contents/Home \
             --with-freetype-include=$TOOL_DIR/freetype-2.9/include \
             --with-freetype-lib=$TOOL_DIR/freetype-2.9/objs/.libs
+}
 
-make images COMPILER_WARNINGS_FATAL=false CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
+buildjdk() {
+	cd $JDK_DIR
+	make images COMPILER_WARNINGS_FATAL=false CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
+}
+
+buildtools
+downloadjdksrc
+patchjdk
+configurejdk
+buildjdk
 
