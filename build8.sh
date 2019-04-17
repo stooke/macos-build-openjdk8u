@@ -100,7 +100,9 @@ patchjdk() {
 	for a in hotspot jdk ; do 
 		cd $JDK_DIR/$a
 		hg revert .
-		hg import --no-commit $PATCH_DIR/mac-jdk8u-$a.patch
+		for b in $PATCH_DIR/mac-jdk8u-$a*.patch ; do 
+			hg import --no-commit $b
+		done
 	done
 }
 

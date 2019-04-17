@@ -1,0 +1,136 @@
+diff --git a/src/os/aix/vm/decoder_aix.hpp b/src/os/aix/vm/decoder_aix.hpp
+--- a/src/os/aix/vm/decoder_aix.hpp
++++ b/src/os/aix/vm/decoder_aix.hpp
+@@ -32,7 +32,7 @@
+   AIXDecoder() {
+     _decoder_status = no_error;
+   }
+-  ~AIXDecoder() {}
++  virtual ~AIXDecoder() {}
+ 
+   virtual bool can_decode_C_frame_in_vm() const { return true; }
+ 
+diff --git a/src/os/bsd/vm/decoder_machO.hpp b/src/os/bsd/vm/decoder_machO.hpp
+--- a/src/os/bsd/vm/decoder_machO.hpp
++++ b/src/os/bsd/vm/decoder_machO.hpp
+@@ -34,7 +34,7 @@
+ class MachODecoder : public AbstractDecoder {
+  public:
+   MachODecoder() { }
+-  ~MachODecoder() { }
++  virtual ~MachODecoder() { }
+   virtual bool can_decode_C_frame_in_vm() const {
+     return true;
+   }
+diff --git a/src/os/windows/vm/decoder_windows.hpp b/src/os/windows/vm/decoder_windows.hpp
+--- a/src/os/windows/vm/decoder_windows.hpp
++++ b/src/os/windows/vm/decoder_windows.hpp
+@@ -56,7 +56,7 @@
+ 
+ public:
+   WindowsDecoder();
+-  ~WindowsDecoder() { uninitialize(); };
++  virtual ~WindowsDecoder() { uninitialize(); };
+ 
+   bool can_decode_C_frame_in_vm() const;
+   bool demangle(const char* symbol, char *buf, int buflen);
+diff --git a/src/share/vm/classfile/classLoader.hpp b/src/share/vm/classfile/classLoader.hpp
+--- a/src/share/vm/classfile/classLoader.hpp
++++ b/src/share/vm/classfile/classLoader.hpp
+@@ -39,7 +39,7 @@
+   int    _num_meta_package_names;
+  public:
+   MetaIndex(char** meta_package_names, int num_meta_package_names);
+-  ~MetaIndex();
++  virtual ~MetaIndex();
+   bool may_contain(const char* class_name);
+ };
+ 
+@@ -61,6 +61,7 @@
+   virtual bool is_lazy();
+   // Constructor
+   ClassPathEntry();
++  virtual ~ClassPathEntry() {}
+   // Attempt to locate file_name through this class path entry.
+   // Returns a class file parsing stream if successfull.
+   virtual ClassFileStream* open_stream(const char* name, TRAPS) = 0;
+@@ -77,6 +78,7 @@
+   bool is_jar_file()  { return false;  }
+   const char* name()  { return _dir; }
+   ClassPathDirEntry(const char* dir);
++  virtual ~ClassPathDirEntry() {}
+   ClassFileStream* open_stream(const char* name, TRAPS);
+   // Debugging
+   NOT_PRODUCT(void compile_the_world(Handle loader, TRAPS);)
+@@ -106,7 +108,7 @@
+   bool is_jar_file()  { return true;  }
+   const char* name()  { return _zip_name; }
+   ClassPathZipEntry(jzfile* zip, const char* zip_name);
+-  ~ClassPathZipEntry();
++  virtual ~ClassPathZipEntry();
+   u1* open_entry(const char* name, jint* filesize, bool nul_terminate, TRAPS);
+   ClassFileStream* open_stream(const char* name, TRAPS);
+   void contents_do(void f(const char* name, void* context), void* context);
+@@ -134,6 +136,7 @@
+   bool is_jar_file();
+   const char* name()  { return _path; }
+   LazyClassPathEntry(const char* path, const struct stat* st, bool throw_exception);
++  virtual ~LazyClassPathEntry() {}
+   u1* open_entry(const char* name, jint* filesize, bool nul_terminate, TRAPS);
+   ClassFileStream* open_stream(const char* name, TRAPS);
+   void set_meta_index(MetaIndex* meta_index) { _meta_index = meta_index; }
+diff --git a/src/share/vm/prims/jvmtiImpl.hpp b/src/share/vm/prims/jvmtiImpl.hpp
+--- a/src/share/vm/prims/jvmtiImpl.hpp
++++ b/src/share/vm/prims/jvmtiImpl.hpp
+@@ -64,6 +64,7 @@
+ 
+ class GrowableElement : public CHeapObj<mtInternal> {
+ public:
++  virtual ~GrowableElement() {}
+   virtual address getCacheValue()          =0;
+   virtual bool equals(GrowableElement* e)  =0;
+   virtual bool lessThan(GrowableElement *e)=0;
+diff --git a/src/share/vm/runtime/perfData.hpp b/src/share/vm/runtime/perfData.hpp
+--- a/src/share/vm/runtime/perfData.hpp
++++ b/src/share/vm/runtime/perfData.hpp
+@@ -288,7 +288,7 @@
+     void *_valuep;
+ 
+     PerfData(CounterNS ns, const char* name, Units u, Variability v);
+-    ~PerfData();
++    virtual ~PerfData();
+ 
+     // create the entry for the PerfData item in the PerfData memory region.
+     // this region is maintained separately from the PerfData objects to
+diff --git a/src/share/vm/utilities/decoder.hpp b/src/share/vm/utilities/decoder.hpp
+--- a/src/share/vm/utilities/decoder.hpp
++++ b/src/share/vm/utilities/decoder.hpp
+@@ -32,6 +32,7 @@
+ 
+ class AbstractDecoder : public CHeapObj<mtInternal> {
+ public:
++  virtual ~AbstractDecoder() {}
+   // status code for decoding native C frame
+   enum decoder_status {
+          not_available = -10,  // real decoder is not available
+@@ -78,7 +79,7 @@
+     _decoder_status = not_available;
+   }
+ 
+-  ~NullDecoder() {};
++  virtual ~NullDecoder() {};
+ 
+   virtual bool decode(address pc, char* buf, int buflen, int* offset,
+     const char* modulepath = NULL) {
+diff --git a/src/share/vm/utilities/decoder_elf.hpp b/src/share/vm/utilities/decoder_elf.hpp
+--- a/src/share/vm/utilities/decoder_elf.hpp
++++ b/src/share/vm/utilities/decoder_elf.hpp
+@@ -37,7 +37,7 @@
+     _opened_elf_files = NULL;
+     _decoder_status = no_error;
+   }
+-  ~ElfDecoder();
++  virtual ~ElfDecoder();
+ 
+   bool can_decode_C_frame_in_vm() const { return true; }
+ 

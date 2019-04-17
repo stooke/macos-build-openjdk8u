@@ -13,10 +13,10 @@ export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
 # define JDK and repo
 JDKBASE=jdk11u-dev
 DEBUG_LEVEL=release
-DEBUG_LEVEL=slowdebug
+#DEBUG_LEVEL=slowdebug
 ## release, fastdebug, slowdebug
 
-# define buuld environment
+# define build environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`
 PATCH_DIR=`pwd`

@@ -1,7 +1,7 @@
 # Compiling jdk8u using XCode 9 or 10 
 
 How to compile JDK 8 with the latest Xcode on macOS Mojave (or High Sierra)
-(stooke@redhat.com, March 2019)
+(stooke@redhat.com, April 2019)
 
 Currently (March 2019), jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
 This repo contains patches and information for setting up an environment to compile a JDK using the very latest tools.
@@ -11,13 +11,11 @@ Because of the caveats below, this patch is not in any shape for contribution to
 ### Caveats:
 - This patch only works with XCode 9 or 10.
 - This patch will produce a JDK that runs on macOS 10.9 and above; the original code runs on macOS 10.7 and above.
-- There is an issue during shutdown that has been solved in later JDKs, a crash in `PerfData::~PerfData()`.
-This can be avoided by (1) commenting out the code on macOS (fine if you didn't start your JVM via JNI)
-or by setting a command line option to not capture performance data in the first place.
+- If you see a crash in a destructor, and the destructor is not virtual, try making the destructor virtual and see if it still crashes.  If the issue is fixed, please email me.
 
 ## The quick way
 
-Download ands run _build.sh_ from this repo
+Download and run _build8.sh_ from this repo
 
 ## Install Prerequisites
 
@@ -91,19 +89,7 @@ make images COMPILER_WARNINGS_FATAL=false
 ./build/maxosx-x86_64-normal-server-slowdebug/images/j2sdk-image/bin/java
 ```
 
-Notice the crash at shutdown.  To avoid this, use the flag `-XX:-UsePerfData`.
-```
-./build/maxosx-x86_64-normal-server-release/images/j2sdk-image/bin/java -XX:-UsePerfData
-```
-
-For javac, use the `-J` option to pass this flag to the underlying JVM.
-```
-./build/maxosx-x86_64-normal-server-release/images/j2sdk-image/bin/javac -J-XX:-UsePerfData Foo.java
-```
-
 ## TODO
 
-- Make a patch to comment out the crashing code until the crash is fixed
-- Fix the shutdown crash
 - Make the patch work with libstdc++
 - Make the patch work with a 'patched' XCode 10 containing libstdc++.  (i.e. copy the libstdc++ libraries and header files from an XCode 9 installation)
