@@ -3,7 +3,7 @@
 set -x
 
 # define toolchain
-XCODE_APP=/Applications/Xcode.app
+XCODE_APP=`dirname \`dirname \\\`xcode-select -p \\\`\``
 XCODE_DEVELOPER_PREFIX=$XCODE_APP/Contents/Developer
 CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
 OLDPATH=$PATH
@@ -11,7 +11,7 @@ export PATH=$TOOL_PREFIX/usr/bin:$PATH
 export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
 
 # define JDK and repo
-JDKBASE=jdk8u-dev
+JDKBASE=jdk8u
 DEBUG_LEVEL=release
 DEBUG_LEVEL=slowdebug
 ## release, fastdebug, slowdebug

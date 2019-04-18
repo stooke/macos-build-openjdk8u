@@ -3,7 +3,7 @@
 set -x
 
 # define toolchain
-XCODE_APP=/Applications/Xcode.app
+XCODE_APP=`dirname \`dirname \\\`xcode-select -p \\\`\``
 XCODE_DEVELOPER_PREFIX=$XCODE_APP/Contents/Developer
 CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
 OLDPATH=$PATH
@@ -116,8 +116,8 @@ buildjdk() {
 	make images CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
 }
 
-#buildtools
-#downloadjdk11devsrc
+buildtools
+downloadjdk11devsrc
 #patchjdk
 configurejdk
 buildjdk
