@@ -113,8 +113,6 @@ build_bootstrap_jdk11() {
         download_and_open https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.2%2B9/OpenJDK11U-jdk_x64_mac_hotspot_11.0.2_9.tar.gz "$TOOL_DIR/jdk11u"
 }
 
-https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/download/jdk-12%2B33/OpenJDK12U-jdk_x64_mac_hotspot_12_33.tar.gz
-
 build_bootstrap_jdk12() {
         if test -d "$TOOL_DIR/jdk12u" ; then
                 return

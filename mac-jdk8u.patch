@@ -86,35 +86,7 @@ diff --git a/common/autoconf/flags.m4 b/common/autoconf/flags.m4
      elif test "x$TOOLCHAIN_TYPE" = xxlc; then
        C_O_FLAG_HIGHEST="-O3"
        C_O_FLAG_HI="-O3 -qstrict"
-@@ -474,6 +519,27 @@
-         ;;
-     esac
-     TOOLCHAIN_CHECK_COMPILER_VERSION(6, FLAGS_SETUP_GCC6_COMPILER_FLAGS)
-+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
-+    # these options are used for both C and C++ compiles
-+    CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -Wall -Wno-parentheses -Wextra -Wno-unused -Wno-unused-parameter -Wformat=2 \
-+        -pipe -D_GNU_SOURCE -D_REENTRANT -D_LARGEFILE64_SOURCE"
-+    case $OPENJDK_TARGET_CPU_ARCH in
-+      arm )
-+        # on arm we don't prevent gcc to omit frame pointer but do prevent strict aliasing
-+        CFLAGS_JDK="${CFLAGS_JDK} -fno-strict-aliasing"
-+        ;;
-+      ppc )
-+        # on ppc we don't prevent gcc to omit frame pointer nor strict-aliasing
-+        ;;
-+      x86 )
-+        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -fno-omit-frame-pointer -fstack-protector"
-+        CFLAGS_JDK="${CFLAGS_JDK} -fno-strict-aliasing -fstack-protector"
-+        ;;
-+      * )
-+        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -fno-omit-frame-pointer"
-+        CFLAGS_JDK="${CFLAGS_JDK} -fno-strict-aliasing"
-+        ;;
-+    esac
-   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
-     CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -DTRACING -DMACRO_MEMSYS_OPS -DBREAKPTS"
-     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
-@@ -610,6 +676,22 @@
+@@ -643,6 +688,22 @@
        # command line.
        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
        LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
@@ -137,7 +109,7 @@ diff --git a/common/autoconf/flags.m4 b/common/autoconf/flags.m4
      fi
    fi
  
-@@ -678,6 +760,23 @@
+@@ -711,6 +772,23 @@
            LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
          fi
        fi
@@ -164,7 +136,7 @@ diff --git a/common/autoconf/flags.m4 b/common/autoconf/flags.m4
 diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-configure.sh
 --- a/common/autoconf/generated-configure.sh
 +++ b/common/autoconf/generated-configure.sh
-@@ -1872,8 +1872,8 @@
+@@ -1880,8 +1880,8 @@
    --with-toolchain-path   prepend these directories when searching for
                            toolchain binaries (compilers etc)
    --with-extra-path       prepend these directories to the default path
@@ -175,16 +147,16 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    --with-conf-name        use this as the name of the configuration [generated
                            from important configuration options]
    --with-builddeps-conf   use this configuration file for the builddeps
-@@ -4358,7 +4358,7 @@
+@@ -4376,7 +4376,7 @@
  #CUSTOM_AUTOCONF_INCLUDE
  
  # Do not change or remove the following line, it is needed for consistency checks:
--DATE_WHEN_GENERATED=1552344461
-+DATE_WHEN_GENERATED=1553481287
+-DATE_WHEN_GENERATED=1556533111
++DATE_WHEN_GENERATED=1558970722
  
  ###############################################################################
  #
-@@ -13973,6 +13973,9 @@
+@@ -13991,6 +13991,9 @@
      elif test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
        OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -DLIBARCH32NAME='\"i386\"' -DLIBARCH64NAME='\"amd64\"'"
      fi
@@ -194,7 +166,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    fi
  
  
-@@ -26635,7 +26638,7 @@
+@@ -26718,7 +26721,7 @@
  $as_echo_n "checking Determining if we need to set DEVELOPER_DIR... " >&6; }
      if test -n "$DEVELOPER_DIR"; then
        if test ! -d "$DEVELOPER_DIR"; then
@@ -203,18 +175,18 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
        fi
        if test ! -f "$DEVELOPER_DIR"/usr/bin/xcodebuild; then
          as_fn_error $? "Xcode Developer path is not valid: $DEVELOPER_DIR, it must point to Contents/Developer inside an Xcode application bundle" "$LINENO" 5
-@@ -26698,8 +26701,8 @@
+@@ -26781,8 +26784,8 @@
      # Fail-fast: verify we're building on Xcode 4, we cannot build with Xcode 5 or later
      XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
 -    if test ! "${XC_VERSION_PARTS[0]}" = "4"; then
 -      as_fn_error $? "Xcode 4 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode 4 or make Xcode 4 active by using xcode-select." "$LINENO" 5
-+    if test "${XC_VERSION_PARTS[0]}" != "4" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10"; then
++    if test "${XC_VERSION_PARTS[0]}" != "4" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10" ; then
 +      as_fn_error $? "Xcode 4, 9 or 10 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select." "$LINENO" 5
      fi
  
      # Some versions of Xcode 5 command line tools install gcc and g++ as symlinks to
-@@ -41170,6 +41173,26 @@
+@@ -41253,6 +41256,26 @@
        SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
        SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
      fi
@@ -241,7 +213,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      PICFLAG="-KPIC"
      C_FLAG_REORDER='-xF'
-@@ -41231,6 +41254,8 @@
+@@ -41314,6 +41337,8 @@
    # Generate make dependency files
    if test "x$TOOLCHAIN_TYPE" = xgcc; then
      C_FLAG_DEPS="-MMD -MF"
@@ -250,7 +222,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      C_FLAG_DEPS="-xMMD -xMF"
    elif test "x$TOOLCHAIN_TYPE" = xxlc; then
-@@ -41255,6 +41280,15 @@
+@@ -41338,6 +41363,15 @@
        CXXFLAGS_DEBUG_SYMBOLS="-g"
      fi
      ASFLAGS_DEBUG_SYMBOLS="-g"
@@ -266,7 +238,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      CFLAGS_DEBUG_SYMBOLS="-g -xs"
      CXXFLAGS_DEBUG_SYMBOLS="-g0 -xs"
-@@ -41311,6 +41345,20 @@
+@@ -41394,6 +41428,20 @@
          C_O_FLAG_NORM="-O2"
          C_O_FLAG_NONE="-O0"
        fi
@@ -287,35 +259,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      elif test "x$TOOLCHAIN_TYPE" = xxlc; then
        C_O_FLAG_HIGHEST="-O3"
        C_O_FLAG_HI="-O3 -qstrict"
-@@ -41704,6 +41752,27 @@
-     :
-   fi
- 
-+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
-+    # these options are used for both C and C++ compiles
-+    CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -Wall -Wno-parentheses -Wextra -Wno-unused -Wno-unused-parameter -Wformat=2 \
-+        -pipe -D_GNU_SOURCE -D_REENTRANT -D_LARGEFILE64_SOURCE"
-+    case $OPENJDK_TARGET_CPU_ARCH in
-+      arm )
-+        # on arm we don't prevent gcc to omit frame pointer but do prevent strict aliasing
-+        CFLAGS_JDK="${CFLAGS_JDK} -fno-strict-aliasing"
-+        ;;
-+      ppc )
-+        # on ppc we don't prevent gcc to omit frame pointer nor strict-aliasing
-+        ;;
-+      x86 )
-+        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -fno-omit-frame-pointer -fstack-protector"
-+        CFLAGS_JDK="${CFLAGS_JDK} -fno-strict-aliasing -fstack-protector"
-+        ;;
-+      * )
-+        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -fno-omit-frame-pointer"
-+        CFLAGS_JDK="${CFLAGS_JDK} -fno-strict-aliasing"
-+        ;;
-+    esac
-   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
-     CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -DTRACING -DMACRO_MEMSYS_OPS -DBREAKPTS"
-     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
-@@ -41840,6 +41909,22 @@
+@@ -42067,6 +42115,22 @@
        # command line.
        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
        LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
@@ -338,7 +282,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      fi
    fi
  
-@@ -41908,6 +41993,23 @@
+@@ -42135,6 +42199,23 @@
            LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
          fi
        fi
@@ -362,7 +306,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      fi
  
      if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
-@@ -48275,7 +48377,7 @@
+@@ -48502,7 +48583,7 @@
  ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
  
      OLD_CXXFLAGS="$CXXFLAGS"
@@ -371,7 +315,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
  
-@@ -48307,7 +48409,7 @@
+@@ -48534,7 +48615,7 @@
      # Test if stdc++ can be linked statically.
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking if static link of stdc++ is possible" >&5
  $as_echo_n "checking if static link of stdc++ is possible... " >&6; }
@@ -380,7 +324,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      ac_ext=cpp
  ac_cpp='$CXXCPP $CPPFLAGS'
  ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-@@ -48364,7 +48466,7 @@
+@@ -48591,7 +48672,7 @@
      # If dynamic was requested, it's available since it would fail above otherwise.
      # If dynamic wasn't requested, go with static unless it isn't available.
      if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
@@ -389,7 +333,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
        LDCXX="$CXX"
        STATIC_CXX_SETTING="STATIC_CXX=false"
        { $as_echo "$as_me:${as_lineno-$LINENO}: result: dynamic" >&5
-@@ -48559,8 +48661,12 @@
+@@ -48786,8 +48867,12 @@
    fi
  
    # TODO better (platform agnostic) test
@@ -480,9 +424,11 @@ diff --git a/common/autoconf/toolchain.m4 b/common/autoconf/toolchain.m4
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
 -    if test ! "${XC_VERSION_PARTS[[0]]}" = "4"; then
 -      AC_MSG_ERROR([Xcode 4 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode 4 or make Xcode 4 active by using xcode-select.])
-+    if test "${XC_VERSION_PARTS[[0]]}" != "4" -a "${XC_VERSION_PARTS[[0]]}" != "10"; then
-+      AC_MSG_ERROR([Xcode 4 or 10 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
++    if test "${XC_VERSION_PARTS[[0]]}" != "4" -a "${XC_VERSION_PARTS[[0]]}" != "9" -a "${XC_VERSION_PARTS[[0]]}" != "10" ; then
++      AC_MSG_ERROR([Xcode 4, 9 or 10 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
      fi
  
      # Some versions of Xcode 5 command line tools install gcc and g++ as symlinks to
-
+diff --git a/configure b/configure
+old mode 100644
+new mode 100755
