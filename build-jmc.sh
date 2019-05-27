@@ -31,7 +31,8 @@ start_jmc_background() {
 build_jmc() {
     cd "$JMC_BUILD_DIR"
     cd core
-    mvn clean install
+    #mvn clean install
+    mvn install
     cd ..
     mvn package
 }
@@ -44,10 +45,10 @@ clean_jmc() {
     #rm -fr $HOME/.m2/repository
 }
 
-. $PATCH_DIR/tools.sh $TOOL_DIR mvn mercurial
+. $PATCH_DIR/tools.sh $TOOL_DIR mvn mercurial bootstrap_jdk8
 clone_jmc
-clean_jmc
-#start_jmc_background
+#clean_jmc
+start_jmc_background
 sleep 5
-#build_jmc
+build_jmc
 
