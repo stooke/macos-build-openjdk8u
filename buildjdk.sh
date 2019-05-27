@@ -43,7 +43,7 @@ configurejdk() {
 
 buildjdk() {
 	pushd "$JDK_DIR"
-	make images CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
+	make images CONF=macosx-x86_64-server-$DEBUG_LEVEL
 	popd
 }
 
