@@ -15,11 +15,13 @@ Because of the caveats below, this patch is not in any shape for contribution to
 
 ## The quick way
 
-Download and run _build8.sh_ from this repo
+Download and run _build8.sh_ and _tools.sh_ from this repo (or, the entire repo)
+This repo also includes scripts to build jdk11, JavaFX and Mission Control.  
+Graal and jtreg scripts are still being worked on.
 
 ## Install Prerequisites
 
-Some of these are also required for building JDK 11, so your efforts won't be wasted here.
+Some of these are also required for building JDK 11, so your efforts won't be wasted here.  The build script will download and install these (except for Xcode; that one's on you) in a local location, so no action is required if you use these scripts
 
 Install XCode 9 or 10, autoconf, freetype and mercurial.
 Install a bootstrap JDK; either JDK 7 or JDK 8.  
@@ -72,6 +74,7 @@ hg import --no-commit ../../mac-jdk8u-jdk.patch
 
 ```
 cd jdk8u-dev
+chmod 755 ./configure ./get_source.sh
 ./configure --with-toolchain-type=clang --with-boot-jdk=`pwd`/../tools/jdk8u202-b08/Contents/Home --with-freetype-include=`pwd`/../tools/freetype-2.9/include --with-freetype-lib=`pwd`/../tools/freetype-2.9/objs/.libs
 ```
 Optionally, add `--with-debug-level=slowdebug` to debug the JDK
