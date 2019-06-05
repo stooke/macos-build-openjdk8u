@@ -6,7 +6,7 @@ pushd `dirname $0`
 PATCH_DIR=`pwd`
 popd
 TOOL_DIR=$BUILD_DIR/tools
-. $PATCH_DIR/tools.sh "$TOOL_DIR" autoconf mx bootstrap_jdk8 mercurial
+. $PATCH_DIR/tools.sh "$TOOL_DIR" autoconf bootstrap_jdk8 mercurial
 
 build_jvmci_jdk8() {
 	if test -d "$TOOL_DIR/jvmci_jdk8" ; then
@@ -25,8 +25,8 @@ download_graal() {
 
 build_graal() {
 	cd $BUILD_DIR/graal/compiler
-	mx build
-	mx vm
+	#mx build
+	mx vm -XX:+PrintFlagsFinal -version
 #	cd $BUILD_DIR/graal/vm
 #	mx build
 }
