@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo "**** doesn't work yet****"
-return 
-
 set -x
 
 # define buuld environment
@@ -13,12 +10,21 @@ popd
 TOOL_DIR=$BUILD_DIR/tools
 JDK_DIR=$BUILD_DIR/$JDKBASE
 
-JMC_REPO=https://hg.openjdk.java.net/jmc/jmc/
-JMC_BUILD_DIR=`pwd`/jmc
+# version is either jmc or jmc7
+JMC_VERSION=jmc7
+JMC_REPO=https://hg.openjdk.java.net/jmc/$JMC_VERSION
+JMC_BUILD_DIR=`pwd`/$JMC_VERSION
+
+JMC_JDK_VERSION=8
 
 clone_jmc() {
     cd `dirname $JMC_BUILD_DIR`
-    hg clone $JMC_REPO $JMC_BUILD_DIR
+    if [ ! -d "$JMC_BUILD_DIR" ] ; then 
+    	hg clone $JMC_REPO $JMC_BUILD_DIR
+    else
+       	cd "$JMC_BUILD_DIR"
+       	hg pull -u
+    fi
 }
 
 start_jmc_background() {
@@ -45,10 +51,10 @@ clean_jmc() {
     #rm -fr $HOME/.m2/repository
 }
 
-. $PATCH_DIR/tools.sh $TOOL_DIR mvn mercurial bootstrap_jdk8
+. $PATCH_DIR/tools.sh $TOOL_DIR mvn mercurial bootstrap_jdk$JMC_JDK_VERSION
+
 clone_jmc
 #clean_jmc
 start_jmc_background
 sleep 5
 build_jmc
-

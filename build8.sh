@@ -5,7 +5,7 @@ set -x
 # define JDK and repo
 JDKBASE=jdk8u-dev
 DEBUG_LEVEL=release
-#DEBUG_LEVEL=slowdebug
+DEBUG_LEVEL=slowdebug
 ## release, fastdebug, slowdebug
 
 # define build environment
@@ -16,23 +16,34 @@ popd
 JDK_DIR=$BUILD_DIR/$JDKBASE
 
 downloadjdksrc() {
-	cd $BUILD_DIR
-	hg revert .
-	hg clone http://hg.openjdk.java.net/jdk8u/$JDKBASE $JDK_DIR
-	cd $JDK_DIR
-	chmod 755 get_source.sh configure
-	./get_source.sh
+	if [ ! -d "$JDK_DIR" ]; then
+		pushd "$BUILD_DIR"
+		hg clone http://hg.openjdk.java.net/jdk8u/$JDKBASE "$JDK_DIR"
+		cd "$JDK_DIR"
+		chmod 755 get_source.sh configure
+		./get_source.sh
+		popd
+	else 
+		pushd "$JDK_DIR"
+		hg pull -u 
+		for a in corba hotspot jaxp jaxws jdk langtools nashorn ; do
+			pushd $a
+			hg pull -u
+			popd
+		done
+		popd
+	fi
 }
 
 patchjdk() {
 	cd $JDK_DIR
 	hg revert .
-	hg import --no-commit $PATCH_DIR/mac-jdk8u.patch
+	patch -p1 <$PATCH_DIR/mac-jdk8u.patch
 	for a in hotspot jdk ; do 
 		cd $JDK_DIR/$a
 		hg revert .
 		for b in $PATCH_DIR/mac-jdk8u-$a*.patch ; do 
-			hg import --no-commit $b
+			 patch -p1 <$b
 		done
 	done
 }

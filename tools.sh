@@ -46,6 +46,18 @@ download_and_open() {
 	rm -fr "$TMP_DIR/dno"	
 }
 
+clone_or_update() {
+	URL="$1"
+	DEST="$2"
+	if ! test -d "$DEST" ; then 
+		git clone "$URL" "$DEST"
+	else
+		pushd "$DEST"
+		git pull 
+		popd
+	fi	
+}
+
 build_autoconf() {
 	if test -d "$TOOL_DIR/autoconf" ; then
 		return
