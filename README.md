@@ -3,7 +3,7 @@
 How to compile JDK 8 with the latest Xcode on macOS Mojave (or High Sierra)
 (stooke@redhat.com, April 2019)
 
-Currently (March 2019), jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
+Currently (March 2019), openjdk jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
 This repo contains patches and information for setting up an environment to compile a JDK using the very latest tools.
 
 Because of the caveats below, this patch is not in any shape for contribution to the JDK.
@@ -15,9 +15,9 @@ Because of the caveats below, this patch is not in any shape for contribution to
 
 ## The quick way
 
-Download and run _build8.sh_ and _tools.sh_ from this repo (or, the entire repo)
-This repo also includes scripts to build jdk11, JavaFX and Mission Control.  
-Graal and jtreg scripts are still being worked on.
+Clone this repo and run _build8.sh_
+This repo also includes scripts to build jdk11, Graal, JavaFX and Mission Control.  
+jtreg build scripts are still being worked on.
 
 ## Install Prerequisites
 
