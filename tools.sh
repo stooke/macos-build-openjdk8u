@@ -83,6 +83,10 @@ build_mvn() {
 	download_and_open http://muug.ca/mirror/apache-dist/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.tar.gz "$TOOL_DIR/apache-maven"
 }
 
+build_mx() {
+        clone_or_update https://github.com/graalvm/mx.git "$TOOL_DIR/mx"
+}
+
 build_freetype() {
 	if test -d "$TOOL_DIR/freetype" ; then
 		return
@@ -170,13 +174,14 @@ buildtools() {
 }
 
 export PATH=$OLDPATH
+# export PATH=$TOOL_DIR/apache-ant/bin:$PATH
 export PATH=$TOOL_DIR/apache-maven/bin:$PATH
 export PATH=$TOOL_DIR/autoconf/bin:$PATH
 export PATH=$TOOL_DIR/cmake:$PATH
-export PATH=$TOOL_DIR/mercurial:$PATH
-# export PATH=$TOOL_DIR/apache-ant/bin:$PATH
-export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$TOOL_DIR/jtreg:$PATH
+export PATH=$TOOL_DIR/mercurial:$PATH
+export PATH=$TOOL_DIR/mx:$PATH
+export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$JAVA_HOME/bin:$PATH
 
 mkdir -p "$TMP_DIR"
