@@ -13,12 +13,18 @@ download_graal() {
 	clone_or_update https://github.com/graalvm/graalvm-demos "$BUILD_DIR/graalvm-demos"
 }
 
+clean_graal() {
+	cd $BUILD_DIR/graal
+	for a in compiler sdk substratevm sulong tools vm truffle ; do ( cd $a ; mx clean ; cd .. ) ; done 
+}
+
 build_graal() {
-	cd $BUILD_DIR/graal/compiler
-	mx build
-	mx vm -XX:+PrintFlagsFinal -version
-#	cd $BUILD_DIR/graal/vm
-#	mx build
+	cd $BUILD_DIR/graal
+	#mx --primary-suite-path compiler build
+	#mx --primary-suite-path substratevm build
+	#mx --primary-suite-path vm build
+	mx --primary-suite-path substratevm native-image
+#	mx --primary-suite-path compiler vm -XX:+PrintFlagsFinal -version 2>&1 || grep JVMCI
 }
 
 download_graal
@@ -26,5 +32,6 @@ download_graal
 export PATH=$JAVA_HOME/bin:$PATH
 
 set -x
+clean_graal
 build_graal
 
