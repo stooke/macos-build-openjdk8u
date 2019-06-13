@@ -69,11 +69,30 @@ build_autoconf() {
 	popd
 }
 
+build_automake() {
+	if test -d "$TOOL_DIR/automake" ; then
+		return
+	fi
+	download_and_open http://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz "$TOOL_DIR/automake"
+	pushd "$TOOL_DIR/automake"
+	./configure --prefix=`pwd`
+	make install
+	popd
+}
+
+build_bison() {
+	echo bison is already in macOS
+}
+
 build_cmake() {
 	if test -d "$TOOL_DIR/cmake" ; then 
 		return
 	fi
 	download_and_open https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Darwin-x86_64.tar.gz "$TOOL_DIR/cmake"
+}
+
+build_libtool() {
+	echo libtool is already in macOS
 }
 
 build_mvn() {
@@ -177,13 +196,14 @@ export PATH=$OLDPATH
 # export PATH=$TOOL_DIR/apache-ant/bin:$PATH
 export PATH=$TOOL_DIR/apache-maven/bin:$PATH
 export PATH=$TOOL_DIR/autoconf/bin:$PATH
-export PATH=$TOOL_DIR/cmake:$PATH
+export PATH=$TOOL_DIR/automake/bin:$PATH
+export PATH=$TOOL_DIR/cmake/CMake.app/Contents/bin:$PATH
 export PATH=$TOOL_DIR/jtreg:$PATH
 export PATH=$TOOL_DIR/mercurial:$PATH
 export PATH=$TOOL_DIR/mx:$PATH
 export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$JAVA_HOME/bin:$PATH
-
+echo $PATH
 mkdir -p "$TMP_DIR"
 shift
 buildtools $*
