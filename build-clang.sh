@@ -2,10 +2,16 @@
 
 # from https://quuxplusone.github.io/blog/2018/04/16/building-llvm-from-source/
 
+USE_LLVM_REPO=1
+
 # define repos
-LLVM_REPO_ROOT=https://github.com/llvm-mirror
-LLVM_REPO_URL=$LLVM_REPO_ROOT/llvm.git
-CLANG_REPO_URL=$LLVM_REPO_ROOT/clang.git
+if [ $USE_LLVM_REPO ] ; then
+	LLVM_REPO_URL=https://github.com/llvm/llvm-project.git
+else
+	LLVM_REPO_ROOT=https://github.com/llvm-mirror
+	LLVM_REPO_URL=$LLVM_REPO_ROOT/llvm.git
+	CLANG_REPO_URL=$LLVM_REPO_ROOT/clang.git
+fi
 
 # define build environment
 BUILD_DIR=`pwd`
@@ -14,12 +20,16 @@ PATCH_DIR=`pwd`
 popd
 
 download_llvm_src() {
-	clone_or_update $LLVM_REPO_URL              "$BUILD_DIR/llvm"
-	clone_or_update $CLANG_REPO_URL             "$BUILD_DIR/llvm/tools/clang"
-	clone_or_update $LLVM_REPO_ROOT/libcxx      "$BUILD_DIR/llvm/projects/libcxx"
-	clone_or_update $LLVM_REPO_ROOT/compiler-rt "$BUILD_DIR/llvm/projects/compiler-rt"
-	clone_or_update $LLVM_REPO_ROOT/lldb        "$BUILD_DIR/llvm/tools/lldb"
-	clone_or_update $LLVM_REPO_ROOT/clang-tools-extra "$BUILD_DIR/llvm/tools/clang/tools/extra"
+	if [ $USE_LLVM_REPO ] ; then
+		clone_or_update $LLVM_REPO_URL "$BUILD_DIR/llvm"
+	else
+		clone_or_update $LLVM_REPO_URL              "$BUILD_DIR/llvm"
+		clone_or_update $CLANG_REPO_URL             "$BUILD_DIR/llvm/tools/clang"
+		clone_or_update $LLVM_REPO_ROOT/libcxx      "$BUILD_DIR/llvm/projects/libcxx"
+		clone_or_update $LLVM_REPO_ROOT/compiler-rt "$BUILD_DIR/llvm/projects/compiler-rt"
+		clone_or_update $LLVM_REPO_ROOT/lldb        "$BUILD_DIR/llvm/tools/lldb"
+		#clone_or_update $LLVM_REPO_ROOT/clang-tools-extra "$BUILD_DIR/llvm/tools/clang/tools/extra"
+	fi
 }
 
 build_swig() {
@@ -30,19 +40,28 @@ build_swig() {
 	# curl -O -L https://ftp.pcre.org/pub/pcre/pcre2-10.33.tar.gz
 	curl -O -L https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz
 	./Tools/pcre-build.sh
-	./autogen.sh && ./configure --prefix=`pwd` && make install
+	./autogen.sh && ./configure --prefix=`pwd` && make 
+	make install
 }
 
 configure_llvm() {
 	mkdir -p "$BUILD_DIR/llvm/build"
 	cd "$BUILD_DIR/llvm/build"
-	cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+	if [ $USE_LLVM_REPO ] ; then
+		cmake -DLLVM_ENABLE_PROJECTS=clang -G "Unix Makefiles" ../llvm
+	else 
+		cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+	fi
 }
 
 build_clang() {
 	cd "$BUILD_DIR/llvm/build"
-	make -j5 clang
-	make -j5 check-clang
+	if [ $USE_LLVM_REPO ] ; then
+		make
+	else
+		make -j5 clang
+		make -j5 check-clang
+	fi
 }
 
 test_clang() {
@@ -58,4 +77,4 @@ build_swig
 export PATH=$BUILD_DIR/tools/swig:$PATH
 configure_llvm
 time build_clang
-time test_clang
+#time test_clang
