@@ -24,7 +24,7 @@ build_graal() {
 	#mx --primary-suite-path compiler build
 	#mx --primary-suite-path substratevm build
 	#mx --primary-suite-path vm build
-	mx --primary-suite-path substratevm native-image
+	mx --primary-suite-path substratevm native-image foo.java
 #	mx --primary-suite-path compiler vm -XX:+PrintFlagsFinal -version 2>&1 || grep JVMCI
 }
 
