@@ -6,6 +6,7 @@ set -x
 JDKBASE=jdk8u-dev
 DEBUG_LEVEL=release
 DEBUG_LEVEL=slowdebug
+DEBUG_LEVEL=fastdebug
 ## release, fastdebug, slowdebug
 
 # define build environment
