@@ -103,7 +103,13 @@ build_mvn() {
 }
 
 build_mx() {
-        clone_or_update https://github.com/graalvm/mx.git "$TOOL_DIR/mx"
+    clone_or_update https://github.com/graalvm/mx.git "$TOOL_DIR/mx"
+}
+
+build_ninja() {
+	clone_or_update https://github.com/ninja-build/ninja.git "$TOOL_DIR/ninja" && cd ninja
+	git checkout release
+	#cat README
 }
 
 build_freetype() {
@@ -178,17 +184,17 @@ buildtools() {
 			export JAVA_HOME=$TOOL_DIR/jdk8u/Contents/Home
 		fi
 		if test $tool = "bootstrap_jdk9" ; then
-                        export JAVA_HOME=$TOOL_DIR/jdk9u/Contents/Home
-                fi
+		    export JAVA_HOME=$TOOL_DIR/jdk9u/Contents/Home
+        fi
 		if test $tool = "bootstrap_jdk10" ; then
-                        export JAVA_HOME=$TOOL_DIR/jdk10u/Contents/Home
-                fi
+            export JAVA_HOME=$TOOL_DIR/jdk10u/Contents/Home
+        fi
 		if test $tool = "bootstrap_jdk11" ; then
-                        export JAVA_HOME=$TOOL_DIR/jdk11u/Contents/Home
-                fi
+             export JAVA_HOME=$TOOL_DIR/jdk11u/Contents/Home
+        fi
 		if test $tool = "bootstrap_jdk12" ; then
-                        export JAVA_HOME=$TOOL_DIR/jdk12u/Contents/Home
-                fi
+            export JAVA_HOME=$TOOL_DIR/jdk12u/Contents/Home
+        fi
 	done
 }
 
@@ -201,6 +207,7 @@ export PATH=$TOOL_DIR/cmake/CMake.app/Contents/bin:$PATH
 export PATH=$TOOL_DIR/jtreg:$PATH
 export PATH=$TOOL_DIR/mercurial:$PATH
 export PATH=$TOOL_DIR/mx:$PATH
+export PATH=$TOOL_DIR/ninja:$PATH
 export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$JAVA_HOME/bin:$PATH
 echo $PATH
