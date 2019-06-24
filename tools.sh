@@ -133,6 +133,16 @@ build_mercurial() {
 	popd
 }
 
+build_re2c() {
+		clone_or_update https://github.com/skvadrik/re2c.git "$TOOL_DIR/re2c"
+		cd "$TOOL_DIR/re2c"
+		./autogen.sh
+		mkdir builddir && cd builddir
+		../configure --prefix=`pwd`/dist
+		make
+		make install
+}
+
 build_bootstrap_jdk8() {
 	if test -d "$TOOL_DIR/jdk8u" ; then
 		return
@@ -208,6 +218,7 @@ export PATH=$TOOL_DIR/jtreg:$PATH
 export PATH=$TOOL_DIR/mercurial:$PATH
 export PATH=$TOOL_DIR/mx:$PATH
 export PATH=$TOOL_DIR/ninja:$PATH
+export PATH=$TOOL_DIR/re2c/builddir/dist/bin:$PATH
 export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$JAVA_HOME/bin:$PATH
 echo $PATH

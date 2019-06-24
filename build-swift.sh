@@ -29,7 +29,7 @@ test_swift() {
 	cd "$BUILD_DIR"
 }
 
-. $PATCH_DIR/tools.sh "$BUILD_DIR/../tools" cmake ninja
+. $PATCH_DIR/tools.sh "$BUILD_DIR/../tools" cmake ninja re2c
 download_swift_src
 #configure_swift
 time build_swift
