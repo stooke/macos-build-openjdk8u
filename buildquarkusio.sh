@@ -1,5 +1,5 @@
 #!/bin/bash
-# GRAALVM_HOME=/Users/stooke/dev/ojdk/graal/vm/mxbuild/darwin-amd64/GRAALVM_SVM/graalvm-svm-20.0.0-beta.02-dev/Contents/Home
+
 # define build environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`

@@ -5,10 +5,11 @@ DOWNLOAD_JCVMCI_JDK8=false
 # define build environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`
-PATCH_DIR=`pwd`
+SCRIPT_DIR=`pwd`
+PATCH_DIR=$SCRIPT_DIR/jdk8-patch
 popd
 TOOL_DIR=$BUILD_DIR/tools
-. $PATCH_DIR/tools.sh "$TOOL_DIR" mx 
+. $SCRIPT_DIR/tools.sh "$TOOL_DIR" mx 
 
 build_graal() {
 	cd $BUILD_DIR/graal
@@ -38,7 +39,7 @@ build_jdk8() {
 		NEW_JAVA_HOME="$BUILD_DIR/jdk8u-dev/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
 		return
 	fi
-	$PATCH_DIR/build8.sh
+	$SCRIPT_DIR/build8.sh
 	if test -d "$BUILD_DIR/jdk8u" ; then 
 		NEW_JAVA_HOME="$BUILD_DIR/jdk8u/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
 		return

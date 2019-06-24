@@ -12,7 +12,8 @@ DEBUG_LEVEL=fastdebug
 # define build environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`
-PATCH_DIR=`pwd`
+SCRIPT_DIR=`pwd`
+PATCH_DIR=$SCRIPT_DIR/jdk8-patch
 popd
 JDK_DIR=$BUILD_DIR/$JDKBASE
 
@@ -68,7 +69,7 @@ buildjdk() {
 	popd
 }
 
-. $PATCH_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev
+. $SCRIPT_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev
 downloadjdksrc
 patchjdk
 configurejdk
