@@ -1,6 +1,6 @@
-diff --git a/src/os/aix/vm/decoder_aix.hpp b/src/os/aix/vm/decoder_aix.hpp
---- a/src/os/aix/vm/decoder_aix.hpp
-+++ b/src/os/aix/vm/decoder_aix.hpp
+diff -r e49125a0c77c src/os/aix/vm/decoder_aix.hpp
+--- a/src/os/aix/vm/decoder_aix.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/os/aix/vm/decoder_aix.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -32,7 +32,7 @@
    AIXDecoder() {
      _decoder_status = no_error;
@@ -10,9 +10,9 @@ diff --git a/src/os/aix/vm/decoder_aix.hpp b/src/os/aix/vm/decoder_aix.hpp
  
    virtual bool can_decode_C_frame_in_vm() const { return true; }
  
-diff --git a/src/os/bsd/vm/decoder_machO.hpp b/src/os/bsd/vm/decoder_machO.hpp
---- a/src/os/bsd/vm/decoder_machO.hpp
-+++ b/src/os/bsd/vm/decoder_machO.hpp
+diff -r e49125a0c77c src/os/bsd/vm/decoder_machO.hpp
+--- a/src/os/bsd/vm/decoder_machO.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/os/bsd/vm/decoder_machO.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -34,7 +34,7 @@
  class MachODecoder : public AbstractDecoder {
   public:
@@ -22,9 +22,9 @@ diff --git a/src/os/bsd/vm/decoder_machO.hpp b/src/os/bsd/vm/decoder_machO.hpp
    virtual bool can_decode_C_frame_in_vm() const {
      return true;
    }
-diff --git a/src/os/windows/vm/decoder_windows.hpp b/src/os/windows/vm/decoder_windows.hpp
---- a/src/os/windows/vm/decoder_windows.hpp
-+++ b/src/os/windows/vm/decoder_windows.hpp
+diff -r e49125a0c77c src/os/windows/vm/decoder_windows.hpp
+--- a/src/os/windows/vm/decoder_windows.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/os/windows/vm/decoder_windows.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -56,7 +56,7 @@
  
  public:
@@ -34,9 +34,9 @@ diff --git a/src/os/windows/vm/decoder_windows.hpp b/src/os/windows/vm/decoder_w
  
    bool can_decode_C_frame_in_vm() const;
    bool demangle(const char* symbol, char *buf, int buflen);
-diff --git a/src/share/vm/classfile/classLoader.hpp b/src/share/vm/classfile/classLoader.hpp
---- a/src/share/vm/classfile/classLoader.hpp
-+++ b/src/share/vm/classfile/classLoader.hpp
+diff -r e49125a0c77c src/share/vm/classfile/classLoader.hpp
+--- a/src/share/vm/classfile/classLoader.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/share/vm/classfile/classLoader.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -39,7 +39,7 @@
    int    _num_meta_package_names;
   public:
@@ -79,9 +79,9 @@ diff --git a/src/share/vm/classfile/classLoader.hpp b/src/share/vm/classfile/cla
    u1* open_entry(const char* name, jint* filesize, bool nul_terminate, TRAPS);
    ClassFileStream* open_stream(const char* name, TRAPS);
    void set_meta_index(MetaIndex* meta_index) { _meta_index = meta_index; }
-diff --git a/src/share/vm/prims/jvmtiImpl.hpp b/src/share/vm/prims/jvmtiImpl.hpp
---- a/src/share/vm/prims/jvmtiImpl.hpp
-+++ b/src/share/vm/prims/jvmtiImpl.hpp
+diff -r e49125a0c77c src/share/vm/prims/jvmtiImpl.hpp
+--- a/src/share/vm/prims/jvmtiImpl.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/share/vm/prims/jvmtiImpl.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -64,6 +64,7 @@
  
  class GrowableElement : public CHeapObj<mtInternal> {
@@ -90,9 +90,9 @@ diff --git a/src/share/vm/prims/jvmtiImpl.hpp b/src/share/vm/prims/jvmtiImpl.hpp
    virtual address getCacheValue()          =0;
    virtual bool equals(GrowableElement* e)  =0;
    virtual bool lessThan(GrowableElement *e)=0;
-diff --git a/src/share/vm/runtime/perfData.hpp b/src/share/vm/runtime/perfData.hpp
---- a/src/share/vm/runtime/perfData.hpp
-+++ b/src/share/vm/runtime/perfData.hpp
+diff -r e49125a0c77c src/share/vm/runtime/perfData.hpp
+--- a/src/share/vm/runtime/perfData.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/share/vm/runtime/perfData.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -288,7 +288,7 @@
      void *_valuep;
  
@@ -102,9 +102,9 @@ diff --git a/src/share/vm/runtime/perfData.hpp b/src/share/vm/runtime/perfData.h
  
      // create the entry for the PerfData item in the PerfData memory region.
      // this region is maintained separately from the PerfData objects to
-diff --git a/src/share/vm/utilities/decoder.hpp b/src/share/vm/utilities/decoder.hpp
---- a/src/share/vm/utilities/decoder.hpp
-+++ b/src/share/vm/utilities/decoder.hpp
+diff -r e49125a0c77c src/share/vm/utilities/decoder.hpp
+--- a/src/share/vm/utilities/decoder.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/share/vm/utilities/decoder.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -32,6 +32,7 @@
  
  class AbstractDecoder : public CHeapObj<mtInternal> {
@@ -122,9 +122,9 @@ diff --git a/src/share/vm/utilities/decoder.hpp b/src/share/vm/utilities/decoder
  
    virtual bool decode(address pc, char* buf, int buflen, int* offset,
      const char* modulepath = NULL) {
-diff --git a/src/share/vm/utilities/decoder_elf.hpp b/src/share/vm/utilities/decoder_elf.hpp
---- a/src/share/vm/utilities/decoder_elf.hpp
-+++ b/src/share/vm/utilities/decoder_elf.hpp
+diff -r e49125a0c77c src/share/vm/utilities/decoder_elf.hpp
+--- a/src/share/vm/utilities/decoder_elf.hpp	Wed Jun 19 09:42:12 2019 +0900
++++ b/src/share/vm/utilities/decoder_elf.hpp	Thu Jun 27 16:06:29 2019 -0400
 @@ -37,7 +37,7 @@
      _opened_elf_files = NULL;
      _decoder_status = no_error;

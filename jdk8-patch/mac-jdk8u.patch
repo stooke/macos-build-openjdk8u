@@ -6,7 +6,7 @@ diff --git a/common/autoconf/basics.m4 b/common/autoconf/basics.m4
    # Xcode version will be validated later
    AC_ARG_WITH([xcode-path], [AS_HELP_STRING([--with-xcode-path],
 -      [explicit path to Xcode 4 (generally for building on 10.9 and later)])],
-+      [explicit path to Xcode 4, 9 or 10 (generally for building on 10.9 and later)])],
++      [explicit path to Xcode (Xcode 4 is supported; generally for building on 10.9 and later)])],
        [XCODE_PATH=$with_xcode_path]
    )
  
@@ -142,8 +142,8 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    --with-extra-path       prepend these directories to the default path
 -  --with-xcode-path       explicit path to Xcode 4 (generally for building on
 -                          10.9 and later)
-+  --with-xcode-path       explicit path to Xcode 4, 9 or 10 (generally for
-+                          building on 10.9 and later)
++  --with-xcode-path       explicit path to Xcode (Xcode 4 is supported;
++                          generally for building on 10.9 and later)
    --with-conf-name        use this as the name of the configuration [generated
                            from important configuration options]
    --with-builddeps-conf   use this configuration file for the builddeps
@@ -152,21 +152,20 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
  
  # Do not change or remove the following line, it is needed for consistency checks:
 -DATE_WHEN_GENERATED=1556533111
-+DATE_WHEN_GENERATED=1558970722
++DATE_WHEN_GENERATED=1561659308
  
  ###############################################################################
  #
-@@ -13991,6 +13991,9 @@
+@@ -13991,6 +13991,8 @@
      elif test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
        OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -DLIBARCH32NAME='\"i386\"' -DLIBARCH64NAME='\"amd64\"'"
      fi
-+  ##elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then
-+  else
++  elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then
 +    OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
    fi
  
  
-@@ -26718,7 +26721,7 @@
+@@ -26718,7 +26720,7 @@
  $as_echo_n "checking Determining if we need to set DEVELOPER_DIR... " >&6; }
      if test -n "$DEVELOPER_DIR"; then
        if test ! -d "$DEVELOPER_DIR"; then
@@ -175,7 +174,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
        fi
        if test ! -f "$DEVELOPER_DIR"/usr/bin/xcodebuild; then
          as_fn_error $? "Xcode Developer path is not valid: $DEVELOPER_DIR, it must point to Contents/Developer inside an Xcode application bundle" "$LINENO" 5
-@@ -26781,8 +26784,8 @@
+@@ -26781,8 +26783,8 @@
      # Fail-fast: verify we're building on Xcode 4, we cannot build with Xcode 5 or later
      XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
@@ -186,7 +185,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      fi
  
      # Some versions of Xcode 5 command line tools install gcc and g++ as symlinks to
-@@ -41253,6 +41256,26 @@
+@@ -41253,6 +41255,26 @@
        SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
        SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
      fi
@@ -213,7 +212,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      PICFLAG="-KPIC"
      C_FLAG_REORDER='-xF'
-@@ -41314,6 +41337,8 @@
+@@ -41314,6 +41336,8 @@
    # Generate make dependency files
    if test "x$TOOLCHAIN_TYPE" = xgcc; then
      C_FLAG_DEPS="-MMD -MF"
@@ -222,7 +221,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      C_FLAG_DEPS="-xMMD -xMF"
    elif test "x$TOOLCHAIN_TYPE" = xxlc; then
-@@ -41338,6 +41363,15 @@
+@@ -41338,6 +41362,15 @@
        CXXFLAGS_DEBUG_SYMBOLS="-g"
      fi
      ASFLAGS_DEBUG_SYMBOLS="-g"
@@ -238,7 +237,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      CFLAGS_DEBUG_SYMBOLS="-g -xs"
      CXXFLAGS_DEBUG_SYMBOLS="-g0 -xs"
-@@ -41394,6 +41428,20 @@
+@@ -41394,6 +41427,20 @@
          C_O_FLAG_NORM="-O2"
          C_O_FLAG_NONE="-O0"
        fi
@@ -259,7 +258,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      elif test "x$TOOLCHAIN_TYPE" = xxlc; then
        C_O_FLAG_HIGHEST="-O3"
        C_O_FLAG_HI="-O3 -qstrict"
-@@ -42067,6 +42115,22 @@
+@@ -42067,6 +42114,22 @@
        # command line.
        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
        LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
@@ -282,7 +281,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      fi
    fi
  
-@@ -42135,6 +42199,23 @@
+@@ -42135,6 +42198,23 @@
            LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
          fi
        fi
@@ -306,34 +305,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
      fi
  
      if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
-@@ -48502,7 +48583,7 @@
- ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
- 
-     OLD_CXXFLAGS="$CXXFLAGS"
--    CXXFLAGS="$CXXFLAGS -lstdc++"
-+    CXXFLAGS="$CXXFLAGS -lc++"
-     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
- /* end confdefs.h.  */
- 
-@@ -48534,7 +48615,7 @@
-     # Test if stdc++ can be linked statically.
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if static link of stdc++ is possible" >&5
- $as_echo_n "checking if static link of stdc++ is possible... " >&6; }
--    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic"
-+    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lc++ -lgcc -Wl,-Bdynamic"
-     ac_ext=cpp
- ac_cpp='$CXXCPP $CPPFLAGS'
- ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-@@ -48591,7 +48672,7 @@
-     # If dynamic was requested, it's available since it would fail above otherwise.
-     # If dynamic wasn't requested, go with static unless it isn't available.
-     if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
--      LIBCXX="$LIBCXX -lstdc++"
-+      LIBCXX="$LIBCXX -lc++"
-       LDCXX="$CXX"
-       STATIC_CXX_SETTING="STATIC_CXX=false"
-       { $as_echo "$as_me:${as_lineno-$LINENO}: result: dynamic" >&5
-@@ -48786,8 +48867,12 @@
+@@ -48786,8 +48866,12 @@
    fi
  
    # TODO better (platform agnostic) test
@@ -341,7 +313,7 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
 -    LIBCXX="-lstdc++"
 +  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x ; then
 +    if test "x$TOOLCHAIN_TYPE" = xgcc; then
-+      LIBCXX="-lxxxxstdc++"
++      LIBCXX="-lstdc++"
 +    elif test "x$TOOLCHAIN_TYPE" = xclang; then
 +      LIBCXX="-std=libc++"
 +    fi
@@ -351,33 +323,6 @@ diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-
 diff --git a/common/autoconf/libraries.m4 b/common/autoconf/libraries.m4
 --- a/common/autoconf/libraries.m4
 +++ b/common/autoconf/libraries.m4
-@@ -935,7 +935,7 @@
-     AC_MSG_CHECKING([if dynamic link of stdc++ is possible])
-     AC_LANG_PUSH(C++)
-     OLD_CXXFLAGS="$CXXFLAGS"
--    CXXFLAGS="$CXXFLAGS -lstdc++"
-+    CXXFLAGS="$CXXFLAGS -lc++"
-     AC_LINK_IFELSE([AC_LANG_PROGRAM([], [return 0;])],
-         [has_dynamic_libstdcxx=yes],
-         [has_dynamic_libstdcxx=no])
-@@ -945,7 +945,7 @@
- 
-     # Test if stdc++ can be linked statically.
-     AC_MSG_CHECKING([if static link of stdc++ is possible])
--    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic"
-+    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lc++ -lgcc -Wl,-Bdynamic"
-     AC_LANG_PUSH(C++)
-     OLD_LIBS="$LIBS"
-     OLD_CXX="$CXX"
-@@ -975,7 +975,7 @@
-     # If dynamic was requested, it's available since it would fail above otherwise.
-     # If dynamic wasn't requested, go with static unless it isn't available.
-     if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
--      LIBCXX="$LIBCXX -lstdc++"
-+      LIBCXX="$LIBCXX -lc++"
-       LDCXX="$CXX"
-       STATIC_CXX_SETTING="STATIC_CXX=false"
-       AC_MSG_RESULT([dynamic])
 @@ -1047,8 +1047,12 @@
    fi
  
@@ -386,7 +331,7 @@ diff --git a/common/autoconf/libraries.m4 b/common/autoconf/libraries.m4
 -    LIBCXX="-lstdc++"
 +  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x ; then 
 +    if test "x$TOOLCHAIN_TYPE" = xgcc; then
-+      LIBCXX="-lxxxxstdc++"
++      LIBCXX="-lstdc++"
 +    elif test "x$TOOLCHAIN_TYPE" = xclang; then
 +      LIBCXX="-std=libc++"
 +    fi
@@ -396,12 +341,11 @@ diff --git a/common/autoconf/libraries.m4 b/common/autoconf/libraries.m4
 diff --git a/common/autoconf/platform.m4 b/common/autoconf/platform.m4
 --- a/common/autoconf/platform.m4
 +++ b/common/autoconf/platform.m4
-@@ -334,6 +334,9 @@
+@@ -334,6 +334,8 @@
      elif test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
        OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -DLIBARCH32NAME='\"i386\"' -DLIBARCH64NAME='\"amd64\"'"
      fi
-+  ##elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then 
-+  else
++  elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then
 +    OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
    fi
    AC_SUBST(OPENJDK_TARGET_CPU_JLI_CFLAGS)

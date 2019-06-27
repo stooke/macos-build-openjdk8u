@@ -1,14 +1,15 @@
-diff --git a/make/lib/CoreLibraries.gmk b/make/lib/CoreLibraries.gmk
---- a/make/lib/CoreLibraries.gmk
-+++ b/make/lib/CoreLibraries.gmk
-@@ -436,13 +436,13 @@
-     INCLUDE_FILES := $(BUILD_LIBJLI_FILES), \
-     LANG := C, \
-     OPTIMIZATION := HIGH, \
--    CFLAGS := $(LIBJLI_CFLAGS), \
-+    CFLAGS := $(LIBJLI_CFLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
-     MAPFILE := $(JDK_TOPDIR)/make/mapfiles/libjli/mapfile-vers, \
-     LDFLAGS := $(LDFLAGS_JDKLIB) \
+diff -r 3de016c65a06 make/lib/CoreLibraries.gmk
+--- a/make/lib/CoreLibraries.gmk	Wed Jan 02 15:33:32 2019 -0800
++++ b/make/lib/CoreLibraries.gmk	Thu Jun 27 16:07:25 2019 -0400
+@@ -410,6 +410,7 @@
+ 
+ ifeq ($(OPENJDK_TARGET_OS), macosx)
+   LIBJLI_CFLAGS += -DPACKAGE_PATH=\"$(PACKAGE_PATH)\"
++  LIBJLI_CFLAGS += -mmacosx-version-min=$(MACOSX_VERSION_MIN)
+ endif
+ 
+ ifneq ($(USE_EXTERNAL_LIBZ), true)
+@@ -443,7 +444,7 @@
          $(call SET_SHARED_LIBRARY_ORIGIN), \
      LDFLAGS_linux := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \
      LDFLAGS_solaris := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \
@@ -17,20 +18,18 @@ diff --git a/make/lib/CoreLibraries.gmk b/make/lib/CoreLibraries.gmk
      LDFLAGS_SUFFIX_solaris := $(LIBZ) $(LIBDL) -lc, \
      LDFLAGS_SUFFIX_linux := $(LIBZ) $(LIBDL) -lc -lpthread, \
      LDFLAGS_SUFFIX_aix := $(LIBZ) $(LIBDL),\
-@@ -502,8 +502,8 @@
-       INCLUDE_FILES := $(BUILD_LIBJLI_FILES), \
+@@ -504,7 +505,7 @@
        LANG := C, \
        OPTIMIZATION := HIGH, \
--      CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS), \
+       CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS), \
 -      LDFLAGS := -nostdlib -r, \
-+      CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
 +      LDFLAGS := -nostdlib -r -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
        OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libjli_static, \
        DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
  
-diff --git a/src/macosx/native/sun/osxapp/ThreadUtilities.m b/src/macosx/native/sun/osxapp/ThreadUtilities.m
---- a/src/macosx/native/sun/osxapp/ThreadUtilities.m
-+++ b/src/macosx/native/sun/osxapp/ThreadUtilities.m
+diff -r 3de016c65a06 src/macosx/native/sun/osxapp/ThreadUtilities.m
+--- a/src/macosx/native/sun/osxapp/ThreadUtilities.m	Wed Jan 02 15:33:32 2019 -0800
++++ b/src/macosx/native/sun/osxapp/ThreadUtilities.m	Thu Jun 27 16:07:25 2019 -0400
 @@ -36,7 +36,7 @@
  static jobject appkitThreadGroup = NULL;
  static BOOL awtEmbedded = NO;

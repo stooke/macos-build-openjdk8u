@@ -4,6 +4,7 @@ set -x
 
 # define JDK and repo
 JDKBASE=jdk8u-dev
+
 DEBUG_LEVEL=release
 DEBUG_LEVEL=slowdebug
 DEBUG_LEVEL=fastdebug
@@ -53,11 +54,13 @@ patchjdk() {
 configurejdk() {
 	pushd $JDK_DIR
 	chmod 755 ./configure
+	unset JAVA_HOME
+	BOOT_JDK=$TOOL_DIR/jdk8u/Contents/Home
 	./configure --with-toolchain-type=clang \
             --with-xcode-path=$XCODE_APP \
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
             --with-debug-level=$DEBUG_LEVEL \
-            --with-boot-jdk=$TOOL_DIR/jdk8u/Contents/Home \
+            --with-boot-jdk=$BOOT_JDK \
             --with-freetype-include=$TOOL_DIR/freetype/include \
             --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs
 	popd
