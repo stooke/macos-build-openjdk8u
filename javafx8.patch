@@ -1,0 +1,35 @@
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle
++++ b/build.gradle
+@@ -742,9 +742,9 @@
+     if (inStream.readLine() != null) {
+         String v = inStream.readLine();
+         if (v != null) {
+-            int ib = v.indexOf(" (build ");
++            int ib = v.indexOf("(build ");
+             if (ib != -1) {
+-                String ver = v.substring(ib + 8, v.size() - 1);
++                String ver = v.substring(ib + 7, v.size() - 1);
+ 
+                 defineProperty("jdkRuntimeVersion", ver)
+                 defineProperty("jdkVersion", jdkRuntimeVersion.split("-")[0])
+diff --git a/buildSrc/mac.gradle b/buildSrc/mac.gradle
+--- a/buildSrc/mac.gradle
++++ b/buildSrc/mac.gradle
+@@ -192,11 +192,11 @@
+         "-c",
+         ccBaseFlags,
+         IS_DEBUG_NATIVE ? ["-DDEBUG", "-O0"] : ["-O3", "-DNDEBUG"]].flatten()
+-    MAC.launcherlibrary.ccFlags += "-stdlib=libstdc++"
++    MAC.launcherlibrary.ccFlags += "-stdlib=libc++"
+ MAC.launcherlibrary.linker = linker
+ MAC.launcherlibrary.linkFlags = ["-ldl", "-dynamiclib",
+         "-framework", "Cocoa",
+-        "-stdlib=libstdc++"]
++        "-stdlib=libc++"]
+ 
+ MAC.iio = [:]
+ MAC.iio.javahInclude = ["com/sun/javafx/iio/**/*"]
+diff --git a/gradlew b/gradlew
+old mode 100644
+new mode 100755
