@@ -19,8 +19,17 @@ else
   TARGET_JDK11=false
 fi
 
-JAVAFX_REPO=https://hg.openjdk.java.net/openjfx/jfx-dev/rt
-JAVAFX_BUILD_DIR=`pwd`/javafx
+if $TARGET_JDK8 ; then
+  JAVAFX_REPO=https://hg.openjdk.java.net/openjfx/8u-dev/rt
+  JAVAFX_BUILD_DIR=`pwd`/jfx8
+fi
+
+
+if $TARGET_JDK11 ; then
+  JAVAFX_REPO=https://hg.openjdk.java.net/openjfx/jfx-dev/rt
+  JAVAFX_BUILD_DIR=`pwd`/jfx11
+fi
+
 
 clone_javafx() {
   if [ ! -d $JAVAFX_BUILD_DIR ] ; then
@@ -43,11 +52,12 @@ clean_javafx() {
 }
 
 build_jdk8() {
-   JDK_DIR=$BUILD_DIR/jdk8u-dev/build/macosx-x86_64-normal-server-release/images/j2sdk-image
+   JDK_DIR=$BUILD_DIR/jdk8u-dev/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image
    if [ ! -f $JDK_DIR/bin/javac ] ; then
        cd $BUILD_DIR
        $PATCH_DIR/build8.sh 
    fi
+   cp $JAVAFX_BUILD_DIR/build/sdk/lib/* $JDK_DIR/jre/lib/ext
 }
  
 build_jdk11() {
@@ -58,7 +68,11 @@ build_jdk11() {
    fi
 }
  
-. $PATCH_DIR/tools.sh $TOOL_DIR ant mercurial cmake mvn bootstrap_jdk11
+if $TARGET_JDK8 ; then
+  . $PATCH_DIR/tools.sh $TOOL_DIR ant mercurial cmake mvn bootstrap_jdk8
+else
+  . $PATCH_DIR/tools.sh $TOOL_DIR ant mercurial cmake mvn bootstrap_jdk11
+fi 
 
 clone_javafx
 clean_javafx
