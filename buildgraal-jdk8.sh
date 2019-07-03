@@ -6,7 +6,7 @@ DOWNLOAD_JCVMCI_JDK8=false
 BUILD_DIR=`pwd`
 pushd `dirname $0`
 SCRIPT_DIR=`pwd`
-PATCH_DIR=$SCRIPT_DIR/jdk8-patch
+PATCH_DIR=$SCRIPT_DIR/jdk8u-patch
 popd
 TOOL_DIR=$BUILD_DIR/tools
 . $SCRIPT_DIR/tools.sh "$TOOL_DIR" mx 

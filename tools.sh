@@ -31,7 +31,7 @@ download_and_open() {
 	DEST="$2"
 	if ! test -f "$FILE" ; then 
 		pushd "$DOWNLOAD_DIR"
-		curl -O -L "$URL"
+		curl -O -L --insecure "$URL"
 		popd
 	fi
 	if test -d "$DEST" ; then
@@ -56,6 +56,10 @@ clone_or_update() {
 		git pull 
 		popd
 	fi	
+}
+
+build_ant() {
+	download_and_open http://apache.mirror.gtcomm.net//ant/binaries/apache-ant-1.10.6-bin.tar.gz "$TOOL_DIR/ant"
 }
 
 build_autoconf() {
@@ -195,21 +199,21 @@ buildtools() {
 		fi
 		if test $tool = "bootstrap_jdk9" ; then
 		    export JAVA_HOME=$TOOL_DIR/jdk9u/Contents/Home
-        fi
+        	fi
 		if test $tool = "bootstrap_jdk10" ; then
-            export JAVA_HOME=$TOOL_DIR/jdk10u/Contents/Home
-        fi
+        	    export JAVA_HOME=$TOOL_DIR/jdk10u/Contents/Home
+	        fi
 		if test $tool = "bootstrap_jdk11" ; then
-             export JAVA_HOME=$TOOL_DIR/jdk11u/Contents/Home
-        fi
+            	    export JAVA_HOME=$TOOL_DIR/jdk11u/Contents/Home
+        	fi
 		if test $tool = "bootstrap_jdk12" ; then
-            export JAVA_HOME=$TOOL_DIR/jdk12u/Contents/Home
-        fi
+        	    export JAVA_HOME=$TOOL_DIR/jdk12u/Contents/Home
+        	fi
 	done
 }
 
 export PATH=$OLDPATH
-# export PATH=$TOOL_DIR/apache-ant/bin:$PATH
+export PATH=$TOOL_DIR/ant/bin:$PATH
 export PATH=$TOOL_DIR/apache-maven/bin:$PATH
 export PATH=$TOOL_DIR/autoconf/bin:$PATH
 export PATH=$TOOL_DIR/automake/bin:$PATH
@@ -221,7 +225,6 @@ export PATH=$TOOL_DIR/ninja:$PATH
 export PATH=$TOOL_DIR/re2c/builddir/dist/bin:$PATH
 export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$JAVA_HOME/bin:$PATH
-echo $PATH
 mkdir -p "$TMP_DIR"
 shift
 buildtools $*

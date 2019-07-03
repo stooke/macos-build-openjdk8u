@@ -3,9 +3,13 @@
 set -x
 set -e
 
-# build options
-SCRATCH_BUILD_JAVA=true
-TARGET_JDK8=true
+# define toolchain
+XCODE_APP=`dirname \`dirname \\\`xcode-select -p \\\`\``
+XCODE_DEVELOPER_PREFIX=$XCODE_APP/Contents/Developer
+CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
+OLDPATH=$PATH
+export PATH=$TOOL_PREFIX/usr/bin:$PATH
+export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
 
 # define build environment
 BUILD_DIR=`pwd`
@@ -13,11 +17,6 @@ pushd `dirname $0`
 PATCH_DIR=`pwd`
 popd
 TOOL_DIR=$BUILD_DIR/tools
-if ! $TARGET_JDK8 ; then
-  TARGET_JDK11=$SCRATCH_BUILD_JAVA
-else
-  TARGET_JDK11=false
-fi
 
 JAVAFX_REPO=https://hg.openjdk.java.net/openjfx/jfx-dev/rt
 JAVAFX_BUILD_DIR=`pwd`/javafx
@@ -42,18 +41,8 @@ clean_javafx() {
     rm -fr build
 }
 
-build_jdk8() {
-   JDK_DIR=$BUILD_DIR/jdk8u-dev/build/macosx-x86_64-normal-server-release/images/j2sdk-image
-   if [ ! -f $JDK_DIR/bin/javac ] ; then
-       cd $BUILD_DIR
-       $PATCH_DIR/build8.sh 
-   fi
-}
- 
 build_jdk11() {
-   JDK_DIR=$BUILD_DIR/jdk11u-dev/build/macosx-x86_64-normal-server-release/images/jdk
    if [ ! -f $JDK_DIR/bin/javac ] ; then
-       cd $BUILD_DIR
        $PATCH_DIR/build11.sh --with-import-modules=$JAVAFX_BUILD_DIR/build/modular-sdk
    fi
 }
@@ -64,11 +53,12 @@ clone_javafx
 clean_javafx
 build_javafx
 
+SCRATCH_BUILD_JAVA=true
 if $SCRATCH_BUILD_JAVA ; then
-   if $TARGET_JDK8 ; then
-      build_jdk8
-   else
-      build_jdk11
-   fi
+   export JDK_DIR=$BUILD_DIR/jdk11u-dev/build/macosx-x86_64-normal-server-release/images/jdk
+   export JAVA_HOME=$JDK_DIR
+   export PATH=$JAVA_HOME/bin:$PATH
+   cd $BUILD_DIR
+   build_jdk11
 fi
 

@@ -7,7 +7,7 @@ pushd `dirname $0`
 PATCH_DIR=`pwd`
 popd
 TOOL_DIR=$BUILD_DIR/tools
-. $PATCH_DIR/tools.sh "$TOOL_DIR" autoconf mx bootstrap_jdk11 mercurial
+. $PATCH_DIR/tools.sh "$TOOL_DIR" autoconf mx mercurial
 
 download_graal() {
 	clone_or_update https://github.com/oracle/graal.git "$BUILD_DIR/graal"
@@ -28,6 +28,10 @@ build_graal() {
 #	mx --primary-suite-path compiler vm -XX:+PrintFlagsFinal -version 2>&1 || grep JVMCI
 }
 
+build_jdk11() {
+	BUILD_JDK11=true
+	if $BUILD_JDK11 ; then
+	
 download_graal
 
 export PATH=$JAVA_HOME/bin:$PATH

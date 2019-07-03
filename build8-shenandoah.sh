@@ -12,7 +12,7 @@ DEBUG_LEVEL=slowdebug
 BUILD_DIR=`pwd`
 pushd `dirname $0`
 SCRIPT_DIR=`pwd`
-PATCH_DIR=$SCRIPT_DIR/jdk8-patch
+PATCH_DIR=$SCRIPT_DIR/jdk8u-patch
 popd
 JDK_DIR=$BUILD_DIR/jdk8-shenandoah
 

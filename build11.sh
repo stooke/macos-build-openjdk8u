@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CONFIG_ARGS=$1
+
 # define JDK and repo
 JDKBASE=jdk11u-dev
 DEBUG_LEVEL=release
@@ -24,9 +26,9 @@ downloadjdk11devsrc() {
 }
 
 patchjdk() {
-	if test -f "$PATCH_DIR/mac-jdk11u.patch" ; then
+	if test -f "$PATCH_DIR/jdk11u-patch/mac-jdk11u.patch" ; then
 		pushd "$JDK_DIR"
-		hg import --no-commit $PATCH_DIR/mac-jdk11u.patch
+		hg import --no-commit $PATCH_DIR/jdk11u-patch/mac-jdk11u.patch
 		popd
 	fi
 }
@@ -37,7 +39,7 @@ configurejdk() {
 	./configure --with-toolchain-type=clang \
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
             --with-debug-level=$DEBUG_LEVEL \
-            --with-boot-jdk=$JAVA_HOME 
+            --with-boot-jdk=$JAVA_HOME $CONFIG_ARGS
 	popd
 }
 
