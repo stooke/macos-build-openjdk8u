@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 DOWNLOAD_JCVMCI_JDK8=false
 
 # define build environment
@@ -31,6 +33,7 @@ download_jvmci_jdk8() {
 build_jdk8() {
 	# we're not clear on if build8.sh builds jdk8u or jdk8u-dev so try both
 	# note we're also assuming a fastdebug build...
+	$SCRIPT_DIR/build8.sh
 	if test -d "$BUILD_DIR/jdk8u" ; then 
 		NEW_JAVA_HOME="$BUILD_DIR/jdk8u/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
 		return

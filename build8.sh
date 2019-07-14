@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -e
 
 # define JDK and repo
 JDKBASE=jdk8u-dev
@@ -40,18 +40,28 @@ downloadjdksrc() {
 
 patchjdk() {
 	cd $JDK_DIR
-	hg revert .
 	patch -p1 <$PATCH_DIR/mac-jdk8u.patch
 	for a in hotspot jdk ; do 
 		cd $JDK_DIR/$a
-		hg revert .
 		for b in $PATCH_DIR/mac-jdk8u-$a*.patch ; do 
 			 patch -p1 <$b
 		done
 	done
 }
 
+revertjdk() {
+	cd $JDK_DIR
+	hg revert .
+	for a in hotspot jdk ; do 
+		cd $JDK_DIR/$a
+		hg revert .
+	done
+}
+
 configurejdk() {
+	if [ $XCODE_VERSION -ge 11 ] ; then
+		DISABLE_PCH=--disable-precompiled-headers
+	fi
 	pushd $JDK_DIR
 	chmod 755 ./configure
 	unset JAVA_HOME
@@ -62,7 +72,7 @@ configurejdk() {
             --with-debug-level=$DEBUG_LEVEL \
             --with-boot-jdk=$BOOT_JDK \
             --with-freetype-include=$TOOL_DIR/freetype/include \
-            --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs
+            --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs $DISABLE_PCH
 	popd
 }
 
@@ -73,7 +83,9 @@ buildjdk() {
 }
 
 . $SCRIPT_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev
-downloadjdksrc
+set -x
+#downloadjdksrc
+revertjdk
 patchjdk
 configurejdk
 buildjdk

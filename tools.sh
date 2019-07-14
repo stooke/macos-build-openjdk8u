@@ -4,11 +4,14 @@
 
 # define toolchain
 XCODE_APP=`dirname \`dirname \\\`xcode-select -p \\\`\``
+XCODE_VERSION=`/usr/bin/xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\1/p' | sed s/[.][0-9]*//`
 XCODE_DEVELOPER_PREFIX=$XCODE_APP/Contents/Developer
 CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
 OLDPATH=$PATH
 export PATH=$TOOL_PREFIX/usr/bin:$PATH
 export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
+
+echo Using xcode version $XCODE_VERSION installed in $XCODE_APP
 
 # define build environment
 TOOL_DIR="$1"
