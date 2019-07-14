@@ -84,8 +84,8 @@ buildjdk() {
 
 . $SCRIPT_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev
 set -x
-#downloadjdksrc
-revertjdk
+downloadjdksrc
+#revertjdk
 patchjdk
 configurejdk
 buildjdk
