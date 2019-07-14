@@ -9,7 +9,7 @@ This repo contains patches and information for setting up an environment to comp
 Because of the caveats below, this patch is not in any shape for contribution to the JDK.
 
 ### Caveats:
-- This patch only works with XCode 9 or 10.
+- This patch only works with XCode 9, 10 or 11 beta.
 - This patch will produce a JDK that runs on macOS 10.9 and above; the original code runs on macOS 10.7 and above.
 - If you see a crash in a destructor, and the destructor is not virtual, try making the destructor virtual and see if it still crashes.  If the issue is fixed, please email me.
 
@@ -78,6 +78,7 @@ chmod 755 ./configure ./get_source.sh
 ./configure --with-toolchain-type=clang --with-boot-jdk=`pwd`/../tools/jdk8u202-b08/Contents/Home --with-freetype-include=`pwd`/../tools/freetype-2.9/include --with-freetype-lib=`pwd`/../tools/freetype-2.9/objs/.libs
 ```
 Optionally, add `--with-debug-level=slowdebug` to debug the JDK
+If you're using the XCode 11 beta, disable precompiled headers: `--disable-precompiled-headers`.  There seems to be an issue with honouring include file paths.
 
 ## build the JDK
 
