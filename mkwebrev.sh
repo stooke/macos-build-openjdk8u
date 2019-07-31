@@ -29,3 +29,17 @@ for a in $repos ; do
   mkwebrev $a $WEBREV_BASE/webrev.$a.$NUM
 done
 
+## to update s01
+echo "don't forget to run"
+echo ##echo "  scp -vr webrevs/webrevs s01.yyz.redhat.com:~stooke/public_html"
+echo "  rsync -v -r --delete webrevs stooke@cr.openjdk.java.net:."
+
+echo ## for jtreg testing
+echo export PRODUCT_HOME=`pwd`/build/linux-x86_64-server-release/images/jdk
+echo export JTREG_HOME=$TOOL_DIR/jtreg/build/image/jtreg
+echo export PATH=$JTREG_HOME/bin:$PATH
+
+echo ./configure --with-jtreg=$JTHOME
+echo make test TEST="test/hotspot/jtreg/gc/TestAllocateHeapAtMultiple.java"
+echo make test TEST="jtreg:test/hotspot:hotspot_gc"
+
