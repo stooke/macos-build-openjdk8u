@@ -10,7 +10,6 @@ CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolc
 OLDPATH=$PATH
 export PATH=$TOOL_PREFIX/usr/bin:$PATH
 export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
-
 echo Using xcode version $XCODE_VERSION installed in $XCODE_APP
 
 # define build environment
@@ -20,6 +19,9 @@ if test ".$TOOL_DIR" = "." ; then
 fi
 if test ".$DOWNLOAD_DIR" = "." ; then
 	DOWNLOAD_DIR="$TOOL_DIR/downloads"
+fi
+if test ".$TOOL_INSTALL_ROOT" = "." ; then
+	TOOL_INSTALL_ROOT="$TOOL_DIR/local"
 fi
 if test ".$TMP" = "." ; then
 	TMP=/tmp
@@ -71,7 +73,7 @@ build_autoconf() {
 	fi
 	download_and_open http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz "$TOOL_DIR/autoconf"
 	pushd "$TOOL_DIR/autoconf"
-	./configure --prefix=`pwd`
+	./configure --prefix=$TOOL_INSTALL_ROOT
 	make install
 	popd
 }
@@ -82,7 +84,7 @@ build_automake() {
 	fi
 	download_and_open http://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz "$TOOL_DIR/automake"
 	pushd "$TOOL_DIR/automake"
-	./configure --prefix=`pwd`
+	./configure --prefix=$TOOL_INSTALL_ROOT
 	make install
 	popd
 }
@@ -141,13 +143,13 @@ build_mercurial() {
 }
 
 build_re2c() {
-		clone_or_update https://github.com/skvadrik/re2c.git "$TOOL_DIR/re2c"
-		cd "$TOOL_DIR/re2c"
-		./autogen.sh
-		mkdir builddir && cd builddir
-		../configure --prefix=`pwd`/dist
-		make
-		make install
+	clone_or_update https://github.com/skvadrik/re2c.git "$TOOL_DIR/re2c"
+	cd "$TOOL_DIR/re2c"
+	./autogen.sh
+	mkdir builddir && cd builddir
+	../configure --prefix=$TOOL_INSTALL_ROOT
+	make
+	make install
 }
 
 build_bootstrap_jdk8() {
@@ -166,18 +168,33 @@ build_bootstrap_jdk10() {
 
 build_bootstrap_jdk11() {
 	if test -d "$TOOL_DIR/jdk11u" ; then
-                return
-        fi
-        download_and_open https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.2%2B9/OpenJDK11U-jdk_x64_mac_hotspot_11.0.2_9.tar.gz "$TOOL_DIR/jdk11u"
+			return
+	fi
+	download_and_open https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.2%2B9/OpenJDK11U-jdk_x64_mac_hotspot_11.0.2_9.tar.gz "$TOOL_DIR/jdk11u"
 }
 
 build_bootstrap_jdk12() {
-        if test -d "$TOOL_DIR/jdk12u" ; then
-                return
-        fi
-        download_and_open https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/download/jdk-12%2B33/OpenJDK12U-jdk_x64_mac_hotspot_12_33.tar.gz "$TOOL_DIR/jdk12u"
+	if test -d "$TOOL_DIR/jdk12u" ; then
+			return
+	fi
+	download_and_open https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/download/jdk-12%2B33/OpenJDK12U-jdk_x64_mac_hotspot_12_33.tar.gz "$TOOL_DIR/jdk12u"
 }
 
+build_make() {
+	# make is already in macos, but kind of old
+	if test -d "$TOOL_DIR/make-4.2.1" ; then
+			return
+	fi
+	download_and_open "https://ftp.gnu.org/gnu/make/make-4.2.1.tar.gz" "$TOOL_DIR/make-4.2.1"
+	pushd "$TOOL_DIR/make-4.2.1"
+	mkdir -p "builddir" && cd "builddir"
+	../configure --prefix=$TOOL_INSTALL_ROOT
+	make all
+	make check
+	make install
+	popd
+}
+	
 build_webrev() {
 	if test -f "$TOOL_DIR/webrev/webrev.ksh" ; then
 		return
@@ -189,6 +206,15 @@ build_webrev() {
 	chmod 755 webrev.ksh
 	popd
 }
+
+build_jtreg() {
+	JTREG_URL=https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2-b14.tar.gz
+	if test -d "$TOOL_DIR/jtreg" ; then
+			return
+	fi
+	download_and_open $JTREG_URL "$TOOL_DIR/jtreg"
+}
+
 
 buildtools() {
 	mkdir -p "$DOWNLOAD_DIR"
@@ -217,17 +243,15 @@ buildtools() {
 
 export PATH=$OLDPATH
 export PATH=$TOOL_DIR/ant/bin:$PATH
-export PATH=$TOOL_DIR/apache-maven/bin:$PATH
-export PATH=$TOOL_DIR/autoconf/bin:$PATH
-export PATH=$TOOL_DIR/automake/bin:$PATH
 export PATH=$TOOL_DIR/cmake/CMake.app/Contents/bin:$PATH
-export PATH=$TOOL_DIR/jtreg:$PATH
+export PATH=$TOOL_DIR/jtreg/bin:$PATH
 export PATH=$TOOL_DIR/mercurial:$PATH
 export PATH=$TOOL_DIR/mx:$PATH
 export PATH=$TOOL_DIR/ninja:$PATH
 export PATH=$TOOL_DIR/re2c/builddir/dist/bin:$PATH
 export PATH=$TOOL_DIR/webrev:$PATH
 export PATH=$JAVA_HOME/bin:$PATH
+export PATH=$TOOL_INSTALL_ROOT/bin:$PATH
 mkdir -p "$TMP_DIR"
 shift
 buildtools $*

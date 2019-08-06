@@ -2,10 +2,13 @@
 
 CONFIG_ARGS=$1
 
+set -e
+
 # define JDK and repo
 JDKBASE=jdk11u-dev
-DEBUG_LEVEL=release
+#DEBUG_LEVEL=release
 #DEBUG_LEVEL=slowdebug
+DEBUG_LEVEL=fastdebug
 ## release, fastdebug, slowdebug
 
 # define build environment
@@ -39,6 +42,7 @@ configurejdk() {
 	./configure --with-toolchain-type=clang \
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
             --with-debug-level=$DEBUG_LEVEL \
+            --with-jtreg="$BUILD_DIR/tools/jtreg" \
             --with-boot-jdk=$JAVA_HOME $CONFIG_ARGS
 	popd
 }
@@ -49,7 +53,7 @@ buildjdk() {
 	popd
 }
 
-. $PATCH_DIR/tools.sh "$BUILD_DIR/tools" autoconf mercurial bootstrap_jdk11
+. $PATCH_DIR/tools.sh "$BUILD_DIR/tools" autoconf mercurial bootstrap_jdk11 jtreg
 downloadjdk11devsrc
 patchjdk
 configurejdk
