@@ -20,7 +20,13 @@ build_graal() {
  	#mx --primary-suite-path substratevm build
 	#mx --primary-suite-path sdk build
 	#mx --primary-suite-path vm build
+
 	mx --primary-suite-path substratevm native-image foo.java
+}
+
+debug_graal() {
+	cd $BUILD_DIR/graal
+	mx --primary-suite-path substratevm native-image -J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 ListDir
 }
 
 download_jvmci_jdk8() {
