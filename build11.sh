@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# CONFIG_ARGS is used when building JavaFX into JDK11
 CONFIG_ARGS=$1
 
 set -e
@@ -18,7 +19,7 @@ PATCH_DIR=`pwd`
 popd
 JDK_DIR=$BUILD_DIR/$JDKBASE
 
-downloadjdk11devsrc() {
+downloadjdk11usrc() {
 	if ! test -d "$JDK_DIR" ; then
 		hg clone http://hg.openjdk.java.net/jdk-updates/$JDKBASE "$JDK_DIR"
 	else
@@ -54,7 +55,7 @@ buildjdk() {
 }
 
 . $PATCH_DIR/tools.sh "$BUILD_DIR/tools" autoconf mercurial bootstrap_jdk11 jtreg
-downloadjdk11devsrc
+downloadjdk11usrc
 patchjdk
 configurejdk
 buildjdk
