@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+
 set -e
 
 SCRIPT_DIR=`pwd`/xx
@@ -10,11 +10,13 @@ cd jdk11u*
 repos="jdk hotspot corba nashorn langtools jaxp jaxws"
 repos=""
 
+# NOTE: the sed RE is very different on a mac vs Linux!
+
 mkwebrev() {
-	# $1 path to repo $2 webrev dir $3 CR#
+	# $1 repo-dir $2 webrev-dir $3 CR#
   RD=$1
   WD=$2
-  CR=`echo $3 | sed s/[^0-9]*//g`
+  CR=`echo $3 | sed -E 's/[^0-9]*([0-9]+)[^0-9]*.*/\1/g'`
   pushd "$RD" >/dev/null
   N=`hg status | wc -l`
   if [ $N != 0 ] ; then
@@ -32,11 +34,13 @@ mkrevs() {
 	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true
 	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
 	WEBREV_DIR=$WEBREV_BASE/jdk-$1
-	mkwebrev . $WEBREV_DIR/webrev.$2 $1
+	mkwebrev . $WEBREV_DIR/$2 $1
 	for a in $repos ; do 
 	  echo processing `pwd`/$a
-	  mkwebrev $a $WEBREV_DIR/webrev.$a.$2 $1
+	  mkwebrev $a $WEBREV_DIR/$a.$2 $1
 	done
+	echo "don't forget to run"
+	echo "  rsync -v -r webrevs/$WEBREV_DIR stooke@cr.openjdk.java.net:./webrevs"
 }
 
 revert() {
@@ -54,14 +58,8 @@ revert() {
 
 #revert
 
-mkrevs 8214777-jdk11u 00
+mkrevs 8215699-jdk11u 00
 
-exit 0
-
-## to update s01
-echo "don't forget to run"
-echo ##echo "  scp -vr webrevs/webrevs s01.yyz.redhat.com:~stooke/public_html"
-echo "  rsync -v -r --delete webrevs stooke@cr.openjdk.java.net:."
 
 echo ## for jtreg testing
 echo export PRODUCT_HOME=`pwd`/build/linux-x86_64-server-release/images/jdk
