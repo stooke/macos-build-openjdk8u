@@ -11,6 +11,7 @@ JDKBASE=jdk11u-dev
 #DEBUG_LEVEL=slowdebug
 DEBUG_LEVEL=fastdebug
 ## release, fastdebug, slowdebug
+JDK_CONFIG=macosx-x86_64-normal-server-$DEBUG_LEVEL
 
 # define build environment
 BUILD_DIR=`pwd`
@@ -54,9 +55,28 @@ buildjdk() {
 	popd
 }
 
+testjdk() {
+	TESTS=$*
+	JDK_HOME="$JDK_DIR/build/$JDK_CONFIG/images/jdk"
+	JT_WORK="$BUILD_DIR/jtreg"
+	pushd "$JDK_DIR"
+	jtreg -w "$JT_WORK/work" -r "$JT_WORK/report" -jdk:$JDK_HOME $TESTS
+	popd
+}
+
+testgtest() {
+	TESTS=$*
+	JDK_HOME="$JDK_DIR/build/$JDK_CONFIG/images/jdk"
+	pushd "$JDK_DIR"
+	make test-hotspot-gtest
+	popd
+}
+
 . $PATCH_DIR/tools.sh "$BUILD_DIR/tools" autoconf mercurial bootstrap_jdk11 jtreg
 downloadjdk11usrc
 patchjdk
 configurejdk
 buildjdk
+testgtest test/hotspot/gtest/classfile/test_symbolTable.cpp
+testjdk test/jdk/java/net/httpclient/ByteArrayPublishers.java
 
