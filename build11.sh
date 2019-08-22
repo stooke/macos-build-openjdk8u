@@ -16,9 +16,11 @@ JDK_CONFIG=macosx-x86_64-normal-server-$DEBUG_LEVEL
 # define build environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`
-PATCH_DIR=`pwd`
+SCRIPT_DIR=`pwd`
 popd
-JDK_DIR=$BUILD_DIR/$JDKBASE
+PATCH_DIR="$SCRIPT_DIR/jdk11u-patch"
+JDK_DIR="$BUILD_DIR/$JDKBASE"
+TOOL_DIR="$BUILD_DIR/tools"
 
 downloadjdk11usrc() {
 	if ! test -d "$JDK_DIR" ; then
@@ -31,9 +33,9 @@ downloadjdk11usrc() {
 }
 
 patchjdk() {
-	if test -f "$PATCH_DIR/jdk11u-patch/mac-jdk11u.patch" ; then
+	if test -f "$PATCH_DIR/mac-jdk11u.patch" ; then
 		pushd "$JDK_DIR"
-		hg import --no-commit $PATCH_DIR/jdk11u-patch/mac-jdk11u.patch
+		hg import -f --no-commit "$PATCH_DIR/mac-jdk11u.patch"
 		popd
 	fi
 }
@@ -44,7 +46,7 @@ configurejdk() {
 	./configure --with-toolchain-type=clang \
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
             --with-debug-level=$DEBUG_LEVEL \
-            --with-jtreg="$BUILD_DIR/tools/jtreg" \
+            --with-jtreg="$TOOL_DIR/jtreg" \
             --with-boot-jdk=$JAVA_HOME $CONFIG_ARGS
 	popd
 }
@@ -72,7 +74,7 @@ testgtest() {
 	popd
 }
 
-. $PATCH_DIR/tools.sh "$BUILD_DIR/tools" autoconf mercurial bootstrap_jdk11 jtreg
+. $SCRIPT_DIR/tools.sh "$TOOL_DIR" autoconf mercurial bootstrap_jdk11 jtreg
 downloadjdk11usrc
 patchjdk
 configurejdk

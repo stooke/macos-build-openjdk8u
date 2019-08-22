@@ -2,11 +2,13 @@
 
 set -e
 
+jdk=jdk11u-dev
+
+REPO_DIR=`pwd`/$jdk
 SCRIPT_DIR=`pwd`/xx
 WEBREV_BASE=`pwd`/webrevs
 . $SCRIPT_DIR/tools.sh `pwd`/tools webrev mercurial
 mkdir -p "$WEBREV_BASE"
-cd jdk11u*
 repos="jdk hotspot corba nashorn langtools jaxp jaxws"
 repos=""
 
@@ -34,16 +36,17 @@ mkrevs() {
 	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true
 	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
 	WEBREV_DIR=$WEBREV_BASE/jdk-$1
-	mkwebrev . $WEBREV_DIR/$2 $1
+	mkwebrev "$REPO_DIR" $WEBREV_DIR/$2 $1
 	for a in $repos ; do 
-	  echo processing `pwd`/$a
-	  mkwebrev $a $WEBREV_DIR/$a.$2 $1
+	  echo processing "$REPO_DIR/$a"
+	  mkwebrev "$REPO_DIR/$a" $WEBREV_DIR/$a.$2 $1
 	done
 	echo "don't forget to run"
-	echo "  rsync -v -r webrevs/$WEBREV_DIR stooke@cr.openjdk.java.net:./webrevs"
+	echo "  rsync -v -r webrevs/`basename $WEBREV_DIR` stooke@cr.openjdk.java.net:./webrevs"
 }
 
 revert() {
+set -x
 	pushd "$REPO_DIR" >/dev/null
 	hg revert .
 	for a in $repos ; do 
@@ -58,7 +61,7 @@ revert() {
 
 #revert
 
-mkrevs 8215699-jdk11u 00
+mkrevs 8223309-jdk11u 00
 
 
 echo ## for jtreg testing
