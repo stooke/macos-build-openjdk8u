@@ -49,6 +49,18 @@ patchjdk() {
 	done
 }
 
+patchjdk2() {
+	cd $JDK_DIR
+	PD=$BUILD_DIR/xwr
+	patch -p1 <$PD/jdk8u-dev.patch
+	for a in hotspot jdk ; do 
+		cd $JDK_DIR/$a
+		for b in $PD/jdk8u-dev-$a*.patch ; do 
+			 patch -p1 <$b
+		done
+	done
+}
+
 revertjdk() {
 	cd $JDK_DIR
 	hg revert .
@@ -58,8 +70,14 @@ revertjdk() {
 	done
 }
 
+cleanjdk() {
+	rm -fr "$JDK_DIR/build"
+	find "$JDK_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
+	find "$JDK_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
+}
+
 configurejdk() {
-	if [ $XCODE_VERSION -ge 11 ] ; then
+	if [ 0$XCODE_VERSION -ge 11 ] ; then
 		DISABLE_PCH=--disable-precompiled-headers
 	fi
 	pushd $JDK_DIR
@@ -71,6 +89,7 @@ configurejdk() {
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
             --with-debug-level=$DEBUG_LEVEL \
             --with-boot-jdk=$BOOT_JDK \
+            --with-jtreg="$BUILD_DIR/tools/jtreg" \
             --with-freetype-include=$TOOL_DIR/freetype/include \
             --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs $DISABLE_PCH
 	popd
@@ -82,11 +101,18 @@ buildjdk() {
 	popd
 }
 
-. $SCRIPT_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev
+testjdk() {
+	pushd $JDK_DIR
+	JT_HOME=$BUILD_DIR/tools/jtreg make test TEST="tier1" 
+	popd
+}
+
+. $SCRIPT_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
 set -x
 downloadjdksrc
-#revertjdk
+revertjdk
 patchjdk
+#cleanjdk
 configurejdk
 buildjdk
-
+testjdk

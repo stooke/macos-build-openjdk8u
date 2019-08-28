@@ -1,6 +1,5 @@
-diff -r 3de016c65a06 make/lib/CoreLibraries.gmk
---- a/make/lib/CoreLibraries.gmk	Wed Jan 02 15:33:32 2019 -0800
-+++ b/make/lib/CoreLibraries.gmk	Thu Jun 27 16:07:25 2019 -0400
+--- old/make/lib/CoreLibraries.gmk	2019-06-27 16:39:13.000000000 -0400
++++ new/make/lib/CoreLibraries.gmk	2019-06-27 16:39:13.000000000 -0400
 @@ -410,6 +410,7 @@
  
  ifeq ($(OPENJDK_TARGET_OS), macosx)
@@ -27,9 +26,8 @@ diff -r 3de016c65a06 make/lib/CoreLibraries.gmk
        OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libjli_static, \
        DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
  
-diff -r 3de016c65a06 src/macosx/native/sun/osxapp/ThreadUtilities.m
---- a/src/macosx/native/sun/osxapp/ThreadUtilities.m	Wed Jan 02 15:33:32 2019 -0800
-+++ b/src/macosx/native/sun/osxapp/ThreadUtilities.m	Thu Jun 27 16:07:25 2019 -0400
+--- old/src/macosx/native/sun/osxapp/ThreadUtilities.m	2019-06-27 16:39:14.000000000 -0400
++++ new/src/macosx/native/sun/osxapp/ThreadUtilities.m	2019-06-27 16:39:14.000000000 -0400
 @@ -36,7 +36,7 @@
  static jobject appkitThreadGroup = NULL;
  static BOOL awtEmbedded = NO;
