@@ -41,8 +41,6 @@ mkrevs() {
 	  echo processing "$REPO_DIR/$a"
 	  mkwebrev "$REPO_DIR/$a" $WEBREV_DIR/$a.$2 $1
 	done
-	echo "don't forget to run"
-	echo "  rsync -v -r webrevs/`basename $WEBREV_DIR` stooke@cr.openjdk.java.net:./webrevs"
 }
 
 revert() {
@@ -62,14 +60,4 @@ set -x
 #revert
 
 mkrevs 8223309-jdk11u 00
-
-
-echo ## for jtreg testing
-echo export PRODUCT_HOME=`pwd`/build/linux-x86_64-server-release/images/jdk
-echo export JTREG_HOME=$TOOL_DIR/jtreg/build/image/jtreg
-echo export PATH=$JTREG_HOME/bin:$PATH
-
-echo ./configure --with-jtreg=$JTHOME
-echo make test TEST="test/hotspot/jtreg/gc/TestAllocateHeapAtMultiple.java"
-echo make test TEST="jtreg:test/hotspot:hotspot_gc"
 
