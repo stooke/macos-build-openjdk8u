@@ -2,7 +2,7 @@
 
 set -e
 
-jdk=jdk8u-dev
+jdk=jdk11u-dev
 
 REPO_DIR=`pwd`/$jdk
 SCRIPT_DIR=`pwd`/xx
@@ -10,7 +10,7 @@ WEBREV_BASE=`pwd`/webrevs
 . $SCRIPT_DIR/tools.sh `pwd`/tools webrev mercurial
 mkdir -p "$WEBREV_BASE"
 repos="jdk hotspot corba nashorn langtools jaxp jaxws"
-#repos=""
+repos=""
 
 # NOTE: the sed RE is very different on a mac vs Linux!
 
@@ -35,53 +35,34 @@ mkrevs() {
 	# $1 CR $2 NUM
 	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true
 	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
-	WEBREV_DIR=$WEBREV_BASE/jdk-$1/$2
+	WEBREV_DIR=$WEBREV_BASE/jdk-$1
 	mkwebrev "$REPO_DIR" $WEBREV_DIR/$2 $1
 	for a in $repos ; do 
 	  echo processing "$REPO_DIR/$a"
 	  mkwebrev "$REPO_DIR/$a" $WEBREV_DIR/$a.$2 $1
 	done
 	echo "don't forget to run"
-	echo "  rsync -v -r  webrevs/jdk-$1/$2 stooke@cr.openjdk.java.net:webrevs"
-}
-
-update() {
-	pushd "$REPO_DIR" >/dev/null
-	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
-	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
-	hg pull -u
-	for a in $repos ; do 
-	  cd $a
-	  hg pull -u
-	  cd ..
-	done
-	popd >/dev/null
-}
-
-clean() {
-	rm -fr "$REPO_DIR/build"
-	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
-	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
+	echo "  rsync -v -r webrevs/`basename $WEBREV_DIR` stooke@cr.openjdk.java.net:./webrevs"
 }
 
 revert() {
+set -x
 	pushd "$REPO_DIR" >/dev/null
-	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
-	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
 	hg revert .
 	for a in $repos ; do 
 	  cd $a
 	  hg revert .
 	  cd ..
 	done
+	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
+	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
 	popd >/dev/null
 }
 
-revert
-update
-#mkrevs 8215756-jdk8u 02
+#revert
 
-exit 0
+mkrevs 8223309-jdk11u 00
+
 
 echo ## for jtreg testing
 echo export PRODUCT_HOME=`pwd`/build/linux-x86_64-server-release/images/jdk
