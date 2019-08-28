@@ -1,0 +1,47 @@
+make test TEST="tier1" currently gives thee failures:
+
+-------------- Test Summary ------------
+
+Summary: hotspot_tier1
+FAILED: compiler/6792161/Test6792161.java
+FAILED: compiler/ciReplay/TestSA.sh
+FAILED: compiler/rtm/locking/TestRTMAbortThreshold.java
+FAILED: compiler/rtm/locking/TestRTMDeoptOnHighAbortRatio.java
+FAILED: compiler/rtm/locking/TestRTMDeoptOnLowAbortRatio.java
+FAILED: compiler/rtm/locking/TestRTMLockingCalculationDelay.java
+FAILED: compiler/rtm/locking/TestRTMLockingThreshold.java
+FAILED: compiler/rtm/locking/TestUseRTMAfterLockInflation.java
+FAILED: compiler/rtm/locking/TestUseRTMForInflatedLocks.java
+FAILED: compiler/rtm/locking/TestUseRTMXendForLockBusy.java
+FAILED: compiler/rtm/method_options/TestUseRTMLockElidingOption.java
+FAILED: compiler/rtm/print/TestPrintPreciseRTMLockingStatistics.java
+FAILED: runtime/SharedArchiveFile/LimitSharedSizes.java
+FAILED: runtime/SharedArchiveFile/SpaceUtilizationCheck.java
+TEST STATS: name=hotspot_tier1  run=772  pass=758  fail=14
+
+Summary: langtools_tier1
+FAILED: tools/javac/diags/CheckExamples.java
+FAILED: tools/javac/fatalErrors/NoJavaLangTest.java
+FAILED: tools/javac/lambda/LambdaParserTest.java
+FAILED: tools/javac/varargs/6199075/T6199075.java
+FAILED: tools/javac/versions/check.sh
+TEST STATS: name=langtools_tier1  run=3118  pass=3113  fail=5
+
+Summary: jdk_tier1
+FAILED: java/util/Calendar/CalendarRegression.java
+FAILED: java/util/Calendar/JapanEraNameCompatTest.java
+FAILED: java/util/TimeZone/HongKong.java
+FAILED: java/util/concurrent/BlockingQueue/CancelledProducerConsumerLoops.java
+FAILED: java/util/concurrent/BlockingQueue/MultipleProducersSingleConsumerLoops.java
+FAILED: java/util/concurrent/BlockingQueue/ProducerConsumerLoops.java
+FAILED: java/util/concurrent/ConcurrentQueues/ConcurrentQueueLoops.java
+FAILED: java/util/concurrent/Exchanger/ExchangeLoops.java
+FAILED: java/util/concurrent/ExecutorCompletionService/ExecutorCompletionServiceLoops.java
+FAILED: java/util/concurrent/FutureTask/CancelledFutureLoops.java
+FAILED: java/util/concurrent/locks/ReentrantLock/CancelledLockLoops.java
+FAILED: java/util/concurrent/locks/ReentrantLock/LockOncePerThreadLoops.java
+FAILED: java/util/concurrent/locks/ReentrantLock/SimpleReentrantLockLoops.java
+FAILED: java/util/concurrent/locks/ReentrantLock/TimeoutLockLoops.java
+FAILED: java/util/concurrent/locks/ReentrantReadWriteLock/MapLoops.java
+TEST STATS: name=jdk_tier1  run=1321  pass=1306  fail=15
+
