@@ -53,7 +53,9 @@ configurejdk() {
 
 buildjdk() {
 	pushd "$JDK_DIR"
-	make images CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
+	IMAGES=images
+	IMAGES=bootcycle-images legacy-images test-image
+	make $IMAGES CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
 	popd
 }
 
@@ -75,10 +77,10 @@ testgtest() {
 }
 
 . $SCRIPT_DIR/tools.sh "$TOOL_DIR" autoconf mercurial bootstrap_jdk11 jtreg
-downloadjdk11usrc
-patchjdk
-configurejdk
-buildjdk
-testgtest test/hotspot/gtest/classfile/test_symbolTable.cpp
-testjdk test/jdk/java/net/httpclient/ByteArrayPublishers.java
+#downloadjdk11usrc
+#patchjdk
+#configurejdk
+#buildjdk
+#testgtest test/hotspot/gtest/classfile/test_symbolTable.cpp
+#testjdk jdk/java/net/httpclient/ByteArrayPublishers.java
 
