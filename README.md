@@ -12,10 +12,12 @@ A version of this patch has been submitted to the jdk8u-dev mailing list.
 
 The easiest way to get a working JDK8u or JDK11u is:
 
+```
   git clone https://github.com/stooke/jdk8u-xcode10.git
   ./jdk8u-xcode10/build8.sh
 or
   ./jdk8u-xcode10/build11.sh
+```
 
 ### Caveats:
 - This patch only works with XCode 9, 10 or 11 beta.
@@ -74,10 +76,8 @@ chmod 755 get_source.sh configure
 ```
 cd jdk8u-dev
 hg import --no-commit ../jdk8u-xcode10/jdk8u-patch/mac-jdk8u.patch
-(you might get an error in patching generated_configure.sh; ignore it or delete the file)
 cd hotspot
 hg import --no-commit ../../jdk8u-xcode10/jdk8u-patch/mac-jdk8u-hotspot.patch
-hg import --no-commit ../../jdk8u-xcode10/jdk8u-patch/mac-jdk8u-hotspot-virt.patch
 cd ../jdk
 hg import --no-commit ../../jdk8u-xcode10/jdk8u-patch/mac-jdk8u-jdk.patch
 ```
