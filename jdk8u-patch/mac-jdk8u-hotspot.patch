@@ -1,5 +1,6 @@
---- old/make/bsd/makefiles/gcc.make	2019-06-27 16:39:21.000000000 -0400
-+++ new/make/bsd/makefiles/gcc.make	2019-06-27 16:39:20.000000000 -0400
+diff --git a/make/bsd/makefiles/gcc.make b/make/bsd/makefiles/gcc.make
+--- a/make/bsd/makefiles/gcc.make
++++ b/make/bsd/makefiles/gcc.make
 @@ -363,7 +363,15 @@
  # Linker flags
  
@@ -17,8 +18,24 @@
  
  ifeq ($(USE_CLANG),)
    # statically link libgcc and/or libgcc_s, libgcc does not exist before gcc-3.x.
---- old/src/os/aix/vm/decoder_aix.hpp	2019-06-27 16:39:22.000000000 -0400
-+++ new/src/os/aix/vm/decoder_aix.hpp	2019-06-27 16:39:22.000000000 -0400
+diff --git a/make/bsd/makefiles/jsig.make b/make/bsd/makefiles/jsig.make
+--- a/make/bsd/makefiles/jsig.make
++++ b/make/bsd/makefiles/jsig.make
+@@ -54,6 +54,11 @@
+ 
+ LFLAGS_JSIG += -D_GNU_SOURCE -pthread $(LDFLAGS_HASH_STYLE) $(EXTRA_LDFLAGS)
+ 
++ifeq ($(OS_VENDOR), Darwin)
++# bring in minimum version argument or we'll fail on OSX 10.10
++LFLAGS_JSIG += $(LFLAGS)
++endif
++
+ # DEBUG_BINARIES overrides everything, use full -g debug information
+ ifeq ($(DEBUG_BINARIES), true)
+   JSIG_DEBUG_CFLAGS = -g
+diff --git a/src/os/aix/vm/decoder_aix.hpp b/src/os/aix/vm/decoder_aix.hpp
+--- a/src/os/aix/vm/decoder_aix.hpp
++++ b/src/os/aix/vm/decoder_aix.hpp
 @@ -32,7 +32,7 @@
    AIXDecoder() {
      _decoder_status = no_error;
@@ -28,8 +45,9 @@
  
    virtual bool can_decode_C_frame_in_vm() const { return true; }
  
---- old/src/os/bsd/vm/decoder_machO.hpp	2019-06-27 16:39:24.000000000 -0400
-+++ new/src/os/bsd/vm/decoder_machO.hpp	2019-06-27 16:39:23.000000000 -0400
+diff --git a/src/os/bsd/vm/decoder_machO.hpp b/src/os/bsd/vm/decoder_machO.hpp
+--- a/src/os/bsd/vm/decoder_machO.hpp
++++ b/src/os/bsd/vm/decoder_machO.hpp
 @@ -34,7 +34,7 @@
  class MachODecoder : public AbstractDecoder {
   public:
@@ -39,8 +57,9 @@
    virtual bool can_decode_C_frame_in_vm() const {
      return true;
    }
---- old/src/os/windows/vm/decoder_windows.hpp	2019-06-27 16:39:25.000000000 -0400
-+++ new/src/os/windows/vm/decoder_windows.hpp	2019-06-27 16:39:25.000000000 -0400
+diff --git a/src/os/windows/vm/decoder_windows.hpp b/src/os/windows/vm/decoder_windows.hpp
+--- a/src/os/windows/vm/decoder_windows.hpp
++++ b/src/os/windows/vm/decoder_windows.hpp
 @@ -56,7 +56,7 @@
  
  public:
@@ -50,8 +69,9 @@
  
    bool can_decode_C_frame_in_vm() const;
    bool demangle(const char* symbol, char *buf, int buflen);
---- old/src/share/vm/classfile/classLoader.hpp	2019-06-27 16:39:26.000000000 -0400
-+++ new/src/share/vm/classfile/classLoader.hpp	2019-06-27 16:39:26.000000000 -0400
+diff --git a/src/share/vm/classfile/classLoader.hpp b/src/share/vm/classfile/classLoader.hpp
+--- a/src/share/vm/classfile/classLoader.hpp
++++ b/src/share/vm/classfile/classLoader.hpp
 @@ -39,7 +39,7 @@
    int    _num_meta_package_names;
   public:
@@ -94,8 +114,9 @@
    u1* open_entry(const char* name, jint* filesize, bool nul_terminate, TRAPS);
    ClassFileStream* open_stream(const char* name, TRAPS);
    void set_meta_index(MetaIndex* meta_index) { _meta_index = meta_index; }
---- old/src/share/vm/prims/jvmtiImpl.hpp	2019-06-27 16:39:28.000000000 -0400
-+++ new/src/share/vm/prims/jvmtiImpl.hpp	2019-06-27 16:39:28.000000000 -0400
+diff --git a/src/share/vm/prims/jvmtiImpl.hpp b/src/share/vm/prims/jvmtiImpl.hpp
+--- a/src/share/vm/prims/jvmtiImpl.hpp
++++ b/src/share/vm/prims/jvmtiImpl.hpp
 @@ -64,6 +64,7 @@
  
  class GrowableElement : public CHeapObj<mtInternal> {
@@ -104,8 +125,9 @@
    virtual address getCacheValue()          =0;
    virtual bool equals(GrowableElement* e)  =0;
    virtual bool lessThan(GrowableElement *e)=0;
---- old/src/share/vm/runtime/perfData.hpp	2019-06-27 16:39:29.000000000 -0400
-+++ new/src/share/vm/runtime/perfData.hpp	2019-06-27 16:39:29.000000000 -0400
+diff --git a/src/share/vm/runtime/perfData.hpp b/src/share/vm/runtime/perfData.hpp
+--- a/src/share/vm/runtime/perfData.hpp
++++ b/src/share/vm/runtime/perfData.hpp
 @@ -288,7 +288,7 @@
      void *_valuep;
  
@@ -115,8 +137,9 @@
  
      // create the entry for the PerfData item in the PerfData memory region.
      // this region is maintained separately from the PerfData objects to
---- old/src/share/vm/utilities/decoder.hpp	2019-06-27 16:39:31.000000000 -0400
-+++ new/src/share/vm/utilities/decoder.hpp	2019-06-27 16:39:30.000000000 -0400
+diff --git a/src/share/vm/utilities/decoder.hpp b/src/share/vm/utilities/decoder.hpp
+--- a/src/share/vm/utilities/decoder.hpp
++++ b/src/share/vm/utilities/decoder.hpp
 @@ -32,6 +32,7 @@
  
  class AbstractDecoder : public CHeapObj<mtInternal> {
@@ -134,8 +157,9 @@
  
    virtual bool decode(address pc, char* buf, int buflen, int* offset,
      const char* modulepath = NULL) {
---- old/src/share/vm/utilities/decoder_elf.hpp	2019-06-27 16:39:32.000000000 -0400
-+++ new/src/share/vm/utilities/decoder_elf.hpp	2019-06-27 16:39:32.000000000 -0400
+diff --git a/src/share/vm/utilities/decoder_elf.hpp b/src/share/vm/utilities/decoder_elf.hpp
+--- a/src/share/vm/utilities/decoder_elf.hpp
++++ b/src/share/vm/utilities/decoder_elf.hpp
 @@ -37,7 +37,7 @@
      _opened_elf_files = NULL;
      _decoder_status = no_error;

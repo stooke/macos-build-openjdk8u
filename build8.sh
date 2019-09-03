@@ -5,10 +5,10 @@ set -e
 # define JDK and repo
 JDKBASE=jdk8u-dev
 
+## release, fastdebug, slowdebug
 DEBUG_LEVEL=release
 DEBUG_LEVEL=slowdebug
 DEBUG_LEVEL=fastdebug
-## release, fastdebug, slowdebug
 
 # define build environment
 BUILD_DIR=`pwd`
@@ -17,6 +17,7 @@ SCRIPT_DIR=`pwd`
 PATCH_DIR=$SCRIPT_DIR/jdk8u-patch
 popd
 JDK_DIR=$BUILD_DIR/$JDKBASE
+JDK_CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
 
 downloadjdksrc() {
 	if [ ! -d "$JDK_DIR" ]; then
@@ -49,18 +50,6 @@ patchjdk() {
 	done
 }
 
-patchjdk2() {
-	cd $JDK_DIR
-	PD=$BUILD_DIR/xwr
-	patch -p1 <$PD/jdk8u-dev.patch
-	for a in hotspot jdk ; do 
-		cd $JDK_DIR/$a
-		for b in $PD/jdk8u-dev-$a*.patch ; do 
-			 patch -p1 <$b
-		done
-	done
-}
-
 revertjdk() {
 	cd $JDK_DIR
 	hg revert .
@@ -77,13 +66,13 @@ cleanjdk() {
 }
 
 configurejdk() {
-	if [ 0$XCODE_VERSION -ge 11 ] ; then
-		DISABLE_PCH=--disable-precompiled-headers
-	fi
+	#if [ $XCODE_VERSION -ge 11 ] ; then
+	#	DISABLE_PCH=--disable-precompiled-headers
+	#fi
 	pushd $JDK_DIR
 	chmod 755 ./configure
 	unset JAVA_HOME
-	BOOT_JDK=$TOOL_DIR/jdk8u/Contents/Home
+	BOOT_JDK=$TOOL_DIR/jdk8u/Contents/HomeZZZZ
 	./configure --with-toolchain-type=clang \
             --with-xcode-path=$XCODE_APP \
             --includedir=$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include \
@@ -97,7 +86,7 @@ configurejdk() {
 
 buildjdk() {
 	pushd $JDK_DIR
-	make images COMPILER_WARNINGS_FATAL=false CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
+	make images COMPILER_WARNINGS_FATAL=false CONF=$JDK_CONF
 	popd
 }
 
@@ -108,11 +97,11 @@ testjdk() {
 }
 
 . $SCRIPT_DIR/tools.sh $BUILD_DIR/tools freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
-set -x
+
 downloadjdksrc
 revertjdk
 patchjdk
 #cleanjdk
 configurejdk
 buildjdk
-testjdk
+#testjdk
