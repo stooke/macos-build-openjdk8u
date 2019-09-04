@@ -5,17 +5,18 @@ set -x
 # define buuld environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`
-PATCH_DIR=`pwd`
+SCRIPT_DIR=`pwd`
 popd
-TOOL_DIR=$BUILD_DIR/tools
-JDK_DIR=$BUILD_DIR/$JDKBASE
+TOOL_DIR="$BUILD_DIR/tools"
+JDK_DIR="$BUILD_DIR/jdk8-shenandoah/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
 
 # version is either jmc or jmc7
 JMC_VERSION=jmc7
 JMC_REPO=https://hg.openjdk.java.net/jmc/$JMC_VERSION
-JMC_BUILD_DIR=`pwd`/$JMC_VERSION
+JMC_BUILD_DIR="$BUILD_DIR/$JMC_VERSION"
 
 JMC_JDK_VERSION=8
+
 
 clone_jmc() {
     cd `dirname $JMC_BUILD_DIR`
@@ -51,8 +52,10 @@ clean_jmc() {
     #rm -fr $HOME/.m2/repository
 }
 
-. $PATCH_DIR/tools.sh $TOOL_DIR mvn mercurial bootstrap_jdk$JMC_JDK_VERSION
+. "$SCRIPT_DIR/tools.sh" "$TOOL_DIR" mvn mercurial bootstrap_jdk$JMC_JDK_VERSION
 
+export JDK_HOME="$JDK_DIR"
+export PATH="$JDK_HOME/bin:$PATH"
 clone_jmc
 #clean_jmc
 start_jmc_background

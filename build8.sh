@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 # define JDK and repo
 JDK_BASE=jdk8u-dev
 
@@ -15,6 +13,10 @@ BUILD_JAVAFX=true
 DEBUG_LEVEL=release
 DEBUG_LEVEL=slowdebug
 DEBUG_LEVEL=fastdebug
+
+### no need to change anything below this line unless something went wrong
+
+set -e
 
 # define build environment
 BUILD_DIR=`pwd`
@@ -160,6 +162,14 @@ clean_javafx() {
     rm -fr build
 }
 
+overlay_javafx() {
+    cd "$JAVAFX_BUILD_DIR"
+    ./gradlew zips
+    cd "$JDK_IMAGE_DIR"
+    unzip "$JAVAFX_BUILD_DIR/build/bundles/javafx-sdk-overlay.zip"
+}
+
+
 #### build the world
 
 if $BUILD_JAVAFX ; then
@@ -188,20 +198,18 @@ patchjdk
 configurejdk
 buildjdk
 #testjdk
-  
-JDK_IMAGE_DIR="$JDK_DIR/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
 
-if $BUILD_JAVAFX ; then
- 	cp $JAVAFX_BUILD_DIR/build/sdk/lib/* "$JDK_IMAGE_DIR/jre/lib/ext"
-fi
+JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
 if $BUILD_JAVAFX ; then
 	WITH_JAVAFX_STR=-javafx
 fi
 
 if $BUILD_SHENANDOAH ; then
-	WITH_SHENANDOAH_STR=-shenendoah
+	WITH_SHENANDOAH_STR=-shenandoah
 fi
+
+overlay_javafx
 
 # create distribution zip
 pushd "$JDK_IMAGE_DIR"

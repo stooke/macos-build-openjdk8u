@@ -215,6 +215,16 @@ build_jtreg() {
 	download_and_open $JTREG_URL "$TOOL_DIR/jtreg"
 }
 
+junk_build_jtreg() {
+	# does not work, so just download a built jtreg for now
+	## requires Ant Mercurial, wget and a JDK 7 or 8
+	# build_ant
+	build_wget
+	cd "$TOOL_DIR"
+	clone_or_update http://hg.openjdk.java.net/code-tools/jtreg jtreg
+	cd jtreg
+	sh make/build-all.sh "$1"
+}
 
 buildtools() {
 	mkdir -p "$DOWNLOAD_DIR"
@@ -243,6 +253,7 @@ buildtools() {
 
 export PATH=$OLDPATH
 export PATH=$TOOL_DIR/ant/bin:$PATH
+export PATH=$TOOL_DIR/apache-maven/bin:$PATH
 export PATH=$TOOL_DIR/cmake/CMake.app/Contents/bin:$PATH
 export PATH=$TOOL_DIR/jtreg/bin:$PATH
 export PATH=$TOOL_DIR/mercurial:$PATH

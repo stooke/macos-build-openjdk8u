@@ -1,3 +1,22 @@
+diff --git a/apps/samples/build.xml b/apps/samples/build.xml
+--- a/apps/samples/build.xml
++++ b/apps/samples/build.xml
+@@ -11,13 +11,13 @@
+ 
+     <target name="jar" depends="swingJar">
+         <ant dir="3DViewer" target="jar" inheritAll="true"/>
+-        <ant dir="Ensemble8" target="jar" inheritAll="true"/>
++        <!--ant dir="Ensemble8" target="jar" inheritAll="true"/-->
+         <ant dir="MandelbrotSet" target="jar" inheritAll="true"/>
+     </target>
+ 
+     <target name="clean">
+         <ant dir="3DViewer" target="clean" inheritAll="true"/>
+-        <ant dir="Ensemble8" target="clean" inheritAll="true"/>
++        <!--ant dir="Ensemble8" target="clean" inheritAll="true"/-->
+         <ant dir="MandelbrotSet" target="clean" inheritAll="true"/>
+         <ant dir="Modena" target="clean" inheritAll="true"/>
+     </target>
 diff --git a/build.gradle b/build.gradle
 --- a/build.gradle
 +++ b/build.gradle
@@ -13,6 +32,36 @@ diff --git a/build.gradle b/build.gradle
  
                  defineProperty("jdkRuntimeVersion", ver)
                  defineProperty("jdkVersion", jdkRuntimeVersion.split("-")[0])
+@@ -3314,10 +3314,10 @@
+               ant.properties['jfxbuild.jfxrt.jar'] = jfxrtJar
+               ant.properties['platforms.JDK_1.8.home'] = "${rootProject.ext.JDK_HOME}"
+               ant.project.executeTarget("sampleAppsJar")
+-              ant.project.executeTarget("scenebuilderSampleAppsJar")
+-              if (!t.name.startsWith("arm")) {
+-                ant.project.executeTarget("scenebuilderAppJar")
+-              }
++              //ant.project.executeTarget("scenebuilderSampleAppsJar")
++              //if (!t.name.startsWith("arm")) {
++              //  ant.project.executeTarget("scenebuilderAppJar")
++              //}
+             }
+         }
+         rootProject.appsjar.dependsOn(appsJar)
+@@ -3327,10 +3327,10 @@
+               ant.properties['targetBld'] = "$t.name"
+               ant.properties['platforms.JDK_1.8.home'] = "${rootProject.ext.JDK_HOME}"
+               ant.project.executeTarget("sampleAppsClean")
+-              ant.project.executeTarget("scenebuilderSampleAppsClean")
+-              if (!t.name.startsWith("arm")) {
+-                ant.project.executeTarget("scenebuilderAppClean")
+-              }
++              //ant.project.executeTarget("scenebuilderSampleAppsClean")
++              //if (!t.name.startsWith("arm")) {
++              //  ant.project.executeTarget("scenebuilderAppClean")
++              //}
+               delete(ensembleLibDir);
+             }
+         }
 diff --git a/buildSrc/mac.gradle b/buildSrc/mac.gradle
 --- a/buildSrc/mac.gradle
 +++ b/buildSrc/mac.gradle
