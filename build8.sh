@@ -4,14 +4,12 @@
 JDK_BASE=jdk8u-dev
 
 # set true to build Shanendoah, false for normal build
-BUILD_SHENANDOAH=true
+BUILD_SHENANDOAH=false
 
 # set true to build javaFX, false for no javaFX
-BUILD_JAVAFX=true
+BUILD_JAVAFX=false
 
 ## release, fastdebug, slowdebug
-DEBUG_LEVEL=release
-DEBUG_LEVEL=slowdebug
 DEBUG_LEVEL=fastdebug
 
 ### no need to change anything below this line unless something went wrong
