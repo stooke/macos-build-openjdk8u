@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 set -e
 
 # define JDK and repo
@@ -8,6 +7,9 @@ JDK_BASE=jdk8u-dev
 
 # set true to build Shanendoah, false for normal build
 BUILD_SHENANDOAH=true
+
+# set true to build javaFX, false for no javaFX
+BUILD_JAVAFX=true
 
 ## release, fastdebug, slowdebug
 DEBUG_LEVEL=release
@@ -30,6 +32,13 @@ if $BUILD_SHENANDOAH ; then
 else
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
 fi
+
+if $BUILD_JAVAFX ; then
+  JAVAFX_REPO=https://hg.openjdk.java.net/openjfx/8u-dev/rt
+  JAVAFX_BUILD_DIR="$BUILD_DIR/jfx8"
+fi
+
+### JDK
 
 downloadjdksrc() {
 	if [ ! -d "$JDK_DIR" ]; then
@@ -108,7 +117,69 @@ testjdk() {
 	popd
 }
 
-. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
+#### Java FX
+
+clone_javafx() {
+  if [ ! -d $JAVAFX_BUILD_DIR ] ; then
+    cd `dirname $JAVAFX_BUILD_DIR`
+    hg clone $JAVAFX_REPO "$JAVAFX_BUILD_DIR"
+    chmod 755 "$JAVAFX_BUILD_DIR/gradlew"
+  fi
+}
+
+patch_javafx() {
+	pushd "$JAVAFX_BUILD_DIR"
+	hg import -f --no-commit "$SCRIPT_DIR/javafx8.patch"
+	popd
+}
+
+revert_javafx() {
+	pushd "$JAVAFX_BUILD_DIR"
+	hg revert .
+	popd
+}
+
+test_javafx() {
+    cd "$JAVAFX_BUILD_DIR"
+    ./gradlew --info cleanTest :base:test
+}
+
+build_javafx() {
+    cd "$JAVAFX_BUILD_DIR"
+    ./gradlew sdk
+}
+
+build_javafx_demos() {
+    cd "$JAVAFX_BUILD_DIR"
+    ./gradlew :apps:build
+}
+
+clean_javafx() {
+    cd "$JAVAFX_BUILD_DIR"
+    ./gradlew clean
+    rm -fr build
+}
+
+#### build the world
+
+if $BUILD_JAVAFX ; then
+	JAVAFX_TOOLS="ant cmake mvn" 
+else
+	unset JAVAFX_TOOLS
+fi
+
+. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg $JAVAFX_TOOLS
+
+if $BUILD_JAVAFX ; then
+	clone_javafx
+	revert_javafx
+	patch_javafx
+	#clean_javafx
+	build_javafx
+	test_javafx
+	build_javafx_demos
+fi
+
 
 downloadjdksrc
 revertjdk
@@ -117,3 +188,23 @@ patchjdk
 configurejdk
 buildjdk
 #testjdk
+  
+JDK_IMAGE_DIR="$JDK_DIR/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
+
+if $BUILD_JAVAFX ; then
+ 	cp $JAVAFX_BUILD_DIR/build/sdk/lib/* "$JDK_IMAGE_DIR/jre/lib/ext"
+fi
+
+if $BUILD_JAVAFX ; then
+	WITH_JAVAFX_STR=-javafx
+fi
+
+if $BUILD_SHENANDOAH ; then
+	WITH_SHENANDOAH_STR=-shenendoah
+fi
+
+# create distribution zip
+pushd "$JDK_IMAGE_DIR"
+zip -r $BUILD_DIR/$JDK_BASE$WITH_JAVAFX_STR$WITH_SHENANDOAH_STR.zip .
+popd
+
