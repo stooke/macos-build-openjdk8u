@@ -92,7 +92,6 @@ configurejdk() {
 	#fi
 	pushd "$JDK_DIR"
 	chmod 755 ./configure
-	unset JAVA_HOME
 	BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
 	./configure --with-toolchain-type=clang \
             --with-xcode-path="$XCODE_APP" \
