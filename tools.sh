@@ -35,6 +35,7 @@ download_and_open() {
 	FILE="$DOWNLOAD_DIR/`basename $URL`"
 	DEST="$2"
 	if ! test -f "$FILE" ; then 
+		echo "downloading $1"
 		pushd "$DOWNLOAD_DIR"
 		curl -O -L --insecure "$URL"
 		popd
@@ -55,6 +56,7 @@ clone_or_update() {
 	URL="$1"
 	DEST="$2"
 	if ! test -d "$DEST" ; then 
+		echo "cloning $1"
 		git clone "$URL" "$DEST"
 	else
 		pushd "$DEST"

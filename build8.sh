@@ -207,7 +207,9 @@ if $BUILD_SHENANDOAH ; then
 	WITH_SHENANDOAH_STR=-shenandoah
 fi
 
-overlay_javafx
+if $BUILD_JAVAFX ; then
+	overlay_javafx
+fi
 
 # create distribution zip
 pushd "$JDK_IMAGE_DIR"
