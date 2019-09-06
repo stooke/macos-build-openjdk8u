@@ -1,16 +1,24 @@
 #!/bin/bash
 
 # define JDK and repo
-JDK_BASE=jdk8u-dev
+if [ "X$JDK_BASE" == "X" ] ; then
+	JDK_BASE=jdk8u-dev
+fi
 
 # set true to build Shanendoah, false for normal build
-BUILD_SHENANDOAH=false
+if [ "X$BUILD_SHENANDOAH" == "X" ] ; then
+	BUILD_SHENANDOAH=true
+fi
 
 # set true to build javaFX, false for no javaFX
-BUILD_JAVAFX=false
+if [ "X$BUILD_JAVAFX" == "X" ] ; then
+	BUILD_JAVAFX=true
+fi
 
 ## release, fastdebug, slowdebug
-DEBUG_LEVEL=fastdebug
+if [ "X$DEBUG_LEVEL" == "X" ] ; then
+	DEBUG_LEVEL=fastdebug
+fi
 
 ### no need to change anything below this line unless something went wrong
 
