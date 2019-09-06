@@ -27,17 +27,15 @@ The easiest way to get a working JDK8u is:
 
 ## The quick way
 
-Clone this repo and run _build8.sh_
-This repo also includes scripts to build JavaFX and Mission Control.  
-jtreg build scripts are still being worked on.
+Clone this repo and run _build8_.  You may edit this script to build jdk8u-dev with Shenandoah GC and/or JavaFX.
 
 ## Install Prerequisites
 
 Some of these are also required for building JDK 11, so your efforts won't be wasted here.  The build script will download and install these (except for Xcode; that one's on you) in a local location, so no action is required if you use these scripts
 
-Install XCode 9 or 10, autoconf, freetype and mercurial.
+Install XCode 9, 10 or 11, autoconf, freetype and mercurial.
 Install a bootstrap JDK; either JDK 7 or JDK 8.  
-If you have a system JDK 8 installed, the build should find it.
+If you have a system JDK 8 installed, the build should find it, but it should be ignored if you use build8.sh.
 
 ```
 curl -O -L http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
