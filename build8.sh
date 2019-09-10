@@ -29,6 +29,7 @@ BUILD_DIR=`pwd`
 pushd `dirname $0`
 SCRIPT_DIR=`pwd`
 PATCH_DIR="$SCRIPT_DIR/jdk8u-patch"
+TOOL_DIR="$BUILD_DIR/tools"
 popd
 JDK_DIR="$BUILD_DIR/$JDK_BASE"
 JDK_CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
@@ -174,7 +175,6 @@ overlay_javafx() {
     unzip "$JAVAFX_BUILD_DIR/build/bundles/javafx-sdk-overlay.zip"
 }
 
-
 #### build the world
 
 if $BUILD_JAVAFX ; then
@@ -195,11 +195,10 @@ if $BUILD_JAVAFX ; then
 	build_javafx_demos
 fi
 
-
 downloadjdksrc
 revertjdk
 patchjdk
-#cleanjdk
+cleanjdk
 configurejdk
 buildjdk
 #testjdk
@@ -220,6 +219,6 @@ fi
 
 # create distribution zip
 pushd "$JDK_IMAGE_DIR"
-zip -r $BUILD_DIR/$JDK_BASE$WITH_JAVAFX_STR$WITH_SHENANDOAH_STR.zip .
+zip -r "$BUILD_DIR/$JDK_BASE$WITH_JAVAFX_STR$WITH_SHENANDOAH_STR.zip" .
 popd
 
