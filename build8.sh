@@ -7,13 +7,14 @@ fi
 
 # set true to build Shanendoah, false for normal build
 if [ "X$BUILD_SHENANDOAH" == "X" ] ; then
-	BUILD_SHENANDOAH=true
+	BUILD_SHENANDOAH=false
 fi
 
 # set true to build javaFX, false for no javaFX
 if [ "X$BUILD_JAVAFX" == "X" ] ; then
 	BUILD_JAVAFX=true
 fi
+BUILD_SCENEBUILDER=true
 
 ## release, fastdebug, slowdebug
 if [ "X$DEBUG_LEVEL" == "X" ] ; then
@@ -30,6 +31,7 @@ pushd `dirname $0`
 SCRIPT_DIR=`pwd`
 PATCH_DIR="$SCRIPT_DIR/jdk8u-patch"
 TOOL_DIR="$BUILD_DIR/tools"
+TMP_DIR="$TOOL_DIR/tmp"
 popd
 JDK_DIR="$BUILD_DIR/$JDK_BASE"
 JDK_CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
@@ -38,19 +40,19 @@ if $BUILD_SHENANDOAH ; then
 	JDK_BASE=jdk8
 	JDK_DIR="$BUILD_DIR/$JDK_BASE-shenandoah"
 	JDK_REPO=http://hg.openjdk.java.net/shenandoah/$JDK_BASE
+else if $BUILD_JFR_INCUBATOR ; then
+	JDK_BASE=jdk8u-jfr-incubator
+	JDK_DIR="$BUILD_DIR/$JDK_BASE-jfr-incubator"
+	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
 else
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
-fi
-
-if $BUILD_JAVAFX ; then
-  JAVAFX_REPO=https://hg.openjdk.java.net/openjfx/8u-dev/rt
-  JAVAFX_BUILD_DIR="$BUILD_DIR/jfx8"
 fi
 
 ### JDK
 
 downloadjdksrc() {
 	if [ ! -d "$JDK_DIR" ]; then
+		progress "clone $JDK_REPO to $JDK_DIR"
 		pushd "$BUILD_DIR"
 		hg clone $JDK_REPO "$JDK_DIR"
 		cd "$JDK_DIR"
@@ -58,6 +60,7 @@ downloadjdksrc() {
 		./get_source.sh
 		popd
 	else 
+		progress "update jdk repo"
 		pushd "$JDK_DIR"
 		hg pull -u 
 		for a in corba hotspot jaxp jaxws jdk langtools nashorn ; do
@@ -70,6 +73,7 @@ downloadjdksrc() {
 }
 
 patchjdk() {
+	progress "patch jdk"
 	cd "$JDK_DIR"
 	patch -p1 <"$PATCH_DIR/mac-jdk8u.patch"
 	for a in hotspot jdk ; do 
@@ -90,12 +94,14 @@ revertjdk() {
 }
 
 cleanjdk() {
+	progress "clean jdk"
 	rm -fr "$JDK_DIR/build"
 	find "$JDK_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
 	find "$JDK_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
 }
 
 configurejdk() {
+	progress "configure jdk"
 	#if [ $XCODE_VERSION -ge 11 ] ; then
 	#	DISABLE_PCH=--disable-precompiled-headers
 	#fi
@@ -106,7 +112,12 @@ configurejdk() {
             --with-xcode-path="$XCODE_APP" \
             --includedir="$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include" \
             --with-debug-level=$DEBUG_LEVEL \
+            --with-conf-name=$JDK_CONF \
             --with-boot-jdk="$BOOT_JDK" \
+            --with-build-number=b88 \
+            --with-vendor-name="pizza" \
+            --with-milestone="foo" \
+            --with-update-version=99 \
             --with-jtreg="$BUILD_DIR/tools/jtreg" \
             --with-freetype-include="$TOOL_DIR/freetype/include" \
             --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs $DISABLE_PCH
@@ -114,86 +125,30 @@ configurejdk() {
 }
 
 buildjdk() {
+	progress "build jdk"
 	pushd "$JDK_DIR"
 	make images COMPILER_WARNINGS_FATAL=false CONF=$JDK_CONF
 	popd
 }
 
 testjdk() {
+	progress "test jdk"
 	pushd "$JDK_DIR"
 	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="tier1" 
 	popd
 }
 
-#### Java FX
-
-clone_javafx() {
-  if [ ! -d $JAVAFX_BUILD_DIR ] ; then
-    cd `dirname $JAVAFX_BUILD_DIR`
-    hg clone $JAVAFX_REPO "$JAVAFX_BUILD_DIR"
-    chmod 755 "$JAVAFX_BUILD_DIR/gradlew"
-  fi
-}
-
-patch_javafx() {
-	pushd "$JAVAFX_BUILD_DIR"
-	hg import -f --no-commit "$SCRIPT_DIR/javafx8.patch"
-	popd
-}
-
-revert_javafx() {
-	pushd "$JAVAFX_BUILD_DIR"
-	hg revert .
-	popd
-}
-
-test_javafx() {
-    cd "$JAVAFX_BUILD_DIR"
-    ./gradlew --info cleanTest :base:test
-}
-
-build_javafx() {
-    cd "$JAVAFX_BUILD_DIR"
-    ./gradlew sdk
-}
-
-build_javafx_demos() {
-    cd "$JAVAFX_BUILD_DIR"
-    ./gradlew :apps:build
-}
-
-clean_javafx() {
-    cd "$JAVAFX_BUILD_DIR"
-    ./gradlew clean
-    rm -fr build
-}
-
-overlay_javafx() {
-    cd "$JAVAFX_BUILD_DIR"
-    ./gradlew zips
-    cd "$JDK_IMAGE_DIR"
-    unzip "$JAVAFX_BUILD_DIR/build/bundles/javafx-sdk-overlay.zip"
+progress() {
+	echo $1
 }
 
 #### build the world
 
-if $BUILD_JAVAFX ; then
-	JAVAFX_TOOLS="ant cmake mvn" 
-else
-	unset JAVAFX_TOOLS
-fi
+progress "download tools"
 
-. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg $JAVAFX_TOOLS
+. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
 
-if $BUILD_JAVAFX ; then
-	clone_javafx
-	revert_javafx
-	patch_javafx
-	#clean_javafx
-	build_javafx
-	test_javafx
-	build_javafx_demos
-fi
+JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
 downloadjdksrc
 revertjdk
@@ -203,7 +158,7 @@ configurejdk
 buildjdk
 #testjdk
 
-JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
+progress "create distribution zip"
 
 if $BUILD_JAVAFX ; then
 	WITH_JAVAFX_STR=-javafx
@@ -213,12 +168,13 @@ if $BUILD_SHENANDOAH ; then
 	WITH_SHENANDOAH_STR=-shenandoah
 fi
 
-if $BUILD_JAVAFX ; then
-	overlay_javafx
-fi
-
-# create distribution zip
 pushd "$JDK_IMAGE_DIR"
 zip -r "$BUILD_DIR/$JDK_BASE$WITH_JAVAFX_STR$WITH_SHENANDOAH_STR.zip" .
 popd
+
+
+if $BUILD_JAVAFX ; then
+	progress "call build_javafx script"
+	"$SCRIPT_DIR/build-javafx.sh" "$JDK_IMAGE_DIR"
+fi
 
