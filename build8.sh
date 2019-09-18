@@ -10,9 +10,15 @@ if [ "X$BUILD_SHENANDOAH" == "X" ] ; then
 	BUILD_SHENANDOAH=false
 fi
 
+# set true to build fromt he 8u JFR incubator repo, false for normal build
+# note that only one of BUILD_SHENANDOAH or BUILD_JFR_INCUBATOR can be set.
+if [ "X$BUILD_JFR_INCUBATOR" == "X" ] ; then
+	BUILD_JFR_INCUBATOR=false
+fi
+
 # set true to build javaFX, false for no javaFX
 if [ "X$BUILD_JAVAFX" == "X" ] ; then
-	BUILD_JAVAFX=true
+	BUILD_JAVAFX=false
 fi
 BUILD_SCENEBUILDER=true
 
@@ -40,7 +46,7 @@ if $BUILD_SHENANDOAH ; then
 	JDK_BASE=jdk8
 	JDK_DIR="$BUILD_DIR/$JDK_BASE-shenandoah"
 	JDK_REPO=http://hg.openjdk.java.net/shenandoah/$JDK_BASE
-else if $BUILD_JFR_INCUBATOR ; then
+elif $BUILD_JFR_INCUBATOR ; then
 	JDK_BASE=jdk8u-jfr-incubator
 	JDK_DIR="$BUILD_DIR/$JDK_BASE-jfr-incubator"
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE

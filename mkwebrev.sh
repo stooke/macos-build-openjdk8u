@@ -4,10 +4,12 @@ set -e
 
 jdk=jdk8u-dev
 
-REPO_DIR=`pwd`/$jdk
-SCRIPT_DIR=`pwd`/xx
-WEBREV_BASE=`pwd`/webrevs
-. $SCRIPT_DIR/tools.sh `pwd`/tools webrev mercurial
+BUILD_DIR=`pwd`
+REPO_DIR="$BUILD_DIR/$jdk"
+SCRIPT_DIR="$BUILD_DIR/xx"
+WEBREV_BASE="$BUILD_DIR/webrevs"
+TOOL_DIR="$BUILD_DIR/tools"
+. "$SCRIPT_DIR/tools.sh" "$TOOL_DIR" webrev mercurial
 mkdir -p "$WEBREV_BASE"
 repos="jdk hotspot corba nashorn langtools jaxp jaxws"
 #repos=""
@@ -35,11 +37,11 @@ mkrevs() {
 	# $1 CR $2 NUM
 	find "$REPO_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true
 	find "$REPO_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
-	WEBREV_DIR=$WEBREV_BASE/jdk-$1/$2
-	mkwebrev "$REPO_DIR" $WEBREV_DIR/$2 $1
+	WEBREV_DIR="$WEBREV_BASE/jdk-$1/$2"
+	mkwebrev "$REPO_DIR" "$WEBREV_DIR/$2" $1
 	for a in $repos ; do 
 	  echo processing "$REPO_DIR/$a"
-	  mkwebrev "$REPO_DIR/$a" $WEBREV_DIR/$a.$2 $1
+	  mkwebrev "$REPO_DIR/$a" "$WEBREV_DIR/$a.$2" $1
 	done
 }
 
@@ -75,7 +77,10 @@ revert() {
 	popd >/dev/null
 }
 
-revert
-update
-#mkrevs 8215756-jdk8u 02
+#revert
+#update
+#cd "$REPO_DIR/jdk"
+#hg import -f --no-commit "$BUILD_DIR/8216965-jdk8.patch"
+
+mkrevs jdk-8226288-jdk8u 00
 
