@@ -1,58 +1,61 @@
 #!/bin/bash
 
-# define JDK and repo
-if [ "X$JDK_BASE" == "X" ] ; then
-	JDK_BASE=jdk8u-dev
+if [ "X$BUILD_MODE" == "X" ] ; then
+	BUILD_MODE=dev
 fi
-
-# set true to build Shanendoah, false for normal build
-if [ "X$BUILD_SHENANDOAH" == "X" ] ; then
-	BUILD_SHENANDOAH=false
-fi
-
-# set true to build fromt he 8u JFR incubator repo, false for normal build
-# note that only one of BUILD_SHENANDOAH or BUILD_JFR_INCUBATOR can be set.
-if [ "X$BUILD_JFR_INCUBATOR" == "X" ] ; then
-	BUILD_JFR_INCUBATOR=false
-fi
-
-# set true to build javaFX, false for no javaFX
-if [ "X$BUILD_JAVAFX" == "X" ] ; then
-	BUILD_JAVAFX=false
-fi
-BUILD_SCENEBUILDER=true
 
 ## release, fastdebug, slowdebug
 if [ "X$DEBUG_LEVEL" == "X" ] ; then
 	DEBUG_LEVEL=fastdebug
 fi
 
+## build directory
+if [ "X$BUILD_DIR" == "X" ] ; then
+	BUILD_DIR=`pwd`
+fi
+
+## add javafx to build at end
+if [ "X$BUILD_JAVAFX" == "X" ] ; then
+	BUILD_JAVAFX=false
+fi
+BUILD_SCENEBUILDER=$BUILD_JAVAFX
+
 ### no need to change anything below this line unless something went wrong
+
+if [ "$BUILD_MODE" == "dev" ] ; then
+	JDK_BASE=jdk8u-dev
+	BUILD_MODE=dev
+	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
+	JDK_DIR="$BUILD_DIR/$JDK_BASE"
+elif [ "$BUILD_MODE" == "shenandoah" ] ; then
+	JDK_BASE=jdk8
+	BUILD_MODE=dev
+	JDK_REPO=http://hg.openjdk.java.net/shenandoah/$JDK_BASE
+	JDK_DIR="$BUILD_DIR/$JDK_BASE-shenandoah"
+elif [ "$BUILD_MODE" == "jvmci" ] ; then
+# this doesn't work yet
+	echo "BUILDMODE=jvmci is not yet supported by this script"
+	JDK_BASE=jdk8u-dev
+	BUILD_MODE=dev
+	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
+	JDK_DIR="$BUILD_DIR/$JDK_BASE-jvmci"
+elif [ "$BUILD_MODE" == "jfr" ] ; then
+	JDK_BASE=jdk8u-jfr-incubator
+	BUILD_MODE=dev
+	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
+	JDK_DIR="$BUILD_DIR/$JDK_BASE"
+fi
 
 set -e
 
 # define build environment
-BUILD_DIR=`pwd`
 pushd `dirname $0`
 SCRIPT_DIR=`pwd`
 PATCH_DIR="$SCRIPT_DIR/jdk8u-patch"
 TOOL_DIR="$BUILD_DIR/tools"
 TMP_DIR="$TOOL_DIR/tmp"
 popd
-JDK_DIR="$BUILD_DIR/$JDK_BASE"
 JDK_CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
-
-if $BUILD_SHENANDOAH ; then 
-	JDK_BASE=jdk8
-	JDK_DIR="$BUILD_DIR/$JDK_BASE-shenandoah"
-	JDK_REPO=http://hg.openjdk.java.net/shenandoah/$JDK_BASE
-elif $BUILD_JFR_INCUBATOR ; then
-	JDK_BASE=jdk8u-jfr-incubator
-	JDK_DIR="$BUILD_DIR/$JDK_BASE-jfr-incubator"
-	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
-else
-	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
-fi
 
 ### JDK
 
@@ -170,17 +173,14 @@ if $BUILD_JAVAFX ; then
 	WITH_JAVAFX_STR=-javafx
 fi
 
-if $BUILD_SHENANDOAH ; then
-	WITH_SHENANDOAH_STR=-shenandoah
-fi
-
-pushd "$JDK_IMAGE_DIR"
-zip -r "$BUILD_DIR/$JDK_BASE$WITH_JAVAFX_STR$WITH_SHENANDOAH_STR.zip" .
-popd
-
+ZIP_NAME="$BUILD_DIR/jdk8u$BUILD_MODE$WITH_JAVAFX_STR.zip"
 
 if $BUILD_JAVAFX ; then
 	progress "call build_javafx script"
-	"$SCRIPT_DIR/build-javafx.sh" "$JDK_IMAGE_DIR"
+	"$SCRIPT_DIR/build-javafx.sh" "$JDK_IMAGE_DIR" "$ZIP_NAME"
+else
+	pushd "$JDK_IMAGE_DIR"
+	zip -r "$ZIP_NAME" .
+	popd
 fi
 
