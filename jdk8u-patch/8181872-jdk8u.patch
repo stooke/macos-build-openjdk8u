@@ -1,0 +1,122 @@
+
+# HG changeset patch
+# User vlivanov
+# Date 1497958645 -10800
+# Node ID 16c9c159df9059ae895433abb9da9fd27560298f
+# Parent  8346c00b2ba6b8e88fe21b0470f9f739172226b6
+8181872: C1: possible overflow when strength reducing integer multiply by constant
+Reviewed-by: kvn
+
+diff -r 8346c00b2ba6 -r 16c9c159df90 src/cpu/x86/vm/c1_LIRGenerator_x86.cpp
+--- a/src/cpu/x86/vm/c1_LIRGenerator_x86.cpp	Sat Jun 17 11:50:50 2017 -0700
++++ b/src/cpu/x86/vm/c1_LIRGenerator_x86.cpp	Tue Jun 20 14:37:25 2017 +0300
+@@ -234,8 +234,8 @@
+ }
+ 
+ 
+-bool LIRGenerator::strength_reduce_multiply(LIR_Opr left, int c, LIR_Opr result, LIR_Opr tmp) {
+-  if (tmp->is_valid()) {
++bool LIRGenerator::strength_reduce_multiply(LIR_Opr left, jint c, LIR_Opr result, LIR_Opr tmp) {
++  if (tmp->is_valid() && c > 0 && c < max_jint) {
+     if (is_power_of_2(c + 1)) {
+       __ move(left, tmp);
+       __ shift_left(left, log2_intptr(c + 1), left);
+@@ -603,8 +603,8 @@
+       bool use_constant = false;
+       bool use_tmp = false;
+       if (right_arg->is_constant()) {
+-        int iconst = right_arg->get_jint_constant();
+-        if (iconst > 0) {
++        jint iconst = right_arg->get_jint_constant();
++        if (iconst > 0 && iconst < max_jint) {
+           if (is_power_of_2(iconst)) {
+             use_constant = true;
+           } else if (is_power_of_2(iconst - 1) || is_power_of_2(iconst + 1)) {
+diff -r 8346c00b2ba6 -r 16c9c159df90 src/share/vm/c1/c1_LIRGenerator.cpp
+--- a/src/share/vm/c1/c1_LIRGenerator.cpp	Sat Jun 17 11:50:50 2017 -0700
++++ b/src/share/vm/c1/c1_LIRGenerator.cpp	Tue Jun 20 14:37:25 2017 +0300
+@@ -545,11 +545,11 @@
+ 
+     case Bytecodes::_imul:
+       {
+-        bool    did_strength_reduce = false;
++        bool did_strength_reduce = false;
+ 
+         if (right->is_constant()) {
+-          int c = right->as_jint();
+-          if (is_power_of_2(c)) {
++          jint c = right->as_jint();
++          if (c > 0 && is_power_of_2(c)) {
+             // do not need tmp here
+             __ shift_left(left_op, exact_log2(c), result_op);
+             did_strength_reduce = true;
+diff -r 8346c00b2ba6 -r 16c9c159df90 src/share/vm/c1/c1_LIRGenerator.hpp
+--- a/src/share/vm/c1/c1_LIRGenerator.hpp	Sat Jun 17 11:50:50 2017 -0700
++++ b/src/share/vm/c1/c1_LIRGenerator.hpp	Tue Jun 20 14:37:25 2017 +0300
+@@ -313,7 +313,7 @@
+   // is_strictfp is only needed for mul and div (and only generates different code on i486)
+   void arithmetic_op(Bytecodes::Code code, LIR_Opr result, LIR_Opr left, LIR_Opr right, bool is_strictfp, LIR_Opr tmp, CodeEmitInfo* info = NULL);
+   // machine dependent.  returns true if it emitted code for the multiply
+-  bool strength_reduce_multiply(LIR_Opr left, int constant, LIR_Opr result, LIR_Opr tmp);
++  bool strength_reduce_multiply(LIR_Opr left, jint constant, LIR_Opr result, LIR_Opr tmp);
+ 
+   void store_stack_parameter (LIR_Opr opr, ByteSize offset_from_sp_in_bytes);
+ 
+diff -r 8346c00b2ba6 -r 16c9c159df90 test/compiler/c1/MultiplyByMaxInt.java
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/test/compiler/c1/MultiplyByMaxInt.java	Tue Jun 20 14:37:25 2017 +0300
+@@ -0,0 +1,53 @@
++/*
++ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++/*
++ * @test
++ * @bug 8181872
++ *
++ * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions
++ *                   -XX:CompileThreshold=100 -XX:+TieredCompilation -XX:TieredStopAtLevel=1
++ *                   -XX:-BackgroundCompilation -XX:CompileCommand=dontinline,compiler.c1.MultiplyByMaxInt::test
++ *                   compiler.c1.MultiplyByMaxInt
++ * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:-BackgroundCompilation
++ *                   -XX:CompileThreshold=100 -XX:+TieredCompilation -XX:TieredStopAtLevel=3
++ *                   -XX:CompileCommand=dontinline,compiler.c1.MultiplyByMaxInt::test
++ *                   compiler.c1.MultiplyByMaxInt
++ */
++package compiler.c1;
++
++public class MultiplyByMaxInt {
++    static int test(int x) {
++        int loops = (x >>> 4) & 7;
++        while (loops-- > 0) {
++            x = (x * 2147483647) % 16807;
++        }
++        return x;
++    }
++
++    public static void main(String[] args) {
++        for (int i = 0; i < 20000; i++) {
++            test(i);
++        }
++    }
++}
+
