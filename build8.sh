@@ -157,9 +157,9 @@ configurejdk() {
 	if $IS_DARWIN ; then
 		BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
 		DARWIN_CONFIG="--with-toolchain-type=clang \
-            --with-xcode-path=\"$XCODE_APP\" \
-            --includedir=\"$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include\" \
-            --with-boot-jdk=\"$BOOT_JDK\""
+            --with-xcode-path="$XCODE_APP" \
+            --includedir="$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include" \
+            --with-boot-jdk="$BOOT_JDK""
 	fi
 	BUILD_VERSION_CONFIG="--with-build-number=b88 \
             --with-vendor-name="pizza" \
