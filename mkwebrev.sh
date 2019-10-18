@@ -2,11 +2,13 @@
 
 set -e
 
-jdk=jdk8u-dev
+jdk=jdk8u
 
 BUILD_DIR=`pwd`
 REPO_DIR="$BUILD_DIR/$jdk"
-SCRIPT_DIR="$BUILD_DIR/xx"
+pushd `dirname $0`
+SCRIPT_DIR=`pwd`
+popd
 WEBREV_BASE="$BUILD_DIR/webrevs"
 TOOL_DIR="$BUILD_DIR/tools"
 . "$SCRIPT_DIR/tools.sh" "$TOOL_DIR" webrev mercurial
@@ -80,7 +82,7 @@ revert() {
 #revert
 #update
 #cd "$REPO_DIR/jdk"
-#hg import -f --no-commit "$BUILD_DIR/8216965-jdk8.patch"
+#hg import -f --no-commit "$BUILD_DIR/8181872-jdk8.patch"
 
-mkrevs jdk-8226288-jdk8u 00
+mkrevs 8181872-jdk8u 00
 

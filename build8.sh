@@ -89,30 +89,21 @@ downloadjdksrc() {
 		progress "clone $JDK_REPO to $JDK_DIR"
 		pushd "$BUILD_DIR"
 		hg clone $JDK_REPO "$JDK_DIR"
-		cd "$JDK_DIR"
-		chmod 755 get_source.sh configure
-		./get_source.sh
-		popd
-	else 
-		progress "update jdk repo"
-		pushd "$JDK_DIR"
-		hg pull -u 
-		for a in corba hotspot jaxp jaxws jdk langtools nashorn ; do
-			pushd $a
-			hg pull -u
-			popd
-		done
 		popd
 	fi
+	pushd "$JDK_DIR"
+	chmod 755 get_source.sh configure
+	./get_source.sh
+	popd
 	print_jdk_repo_id
 }
 
 print_jdk_repo_id() {
 	pushd "$JDK_DIR"
-	progress "JDK base repo:" `hg id`
+	progress "JDK base repo: `hg id`"
 	for a in corba hotspot jaxp jaxws jdk langtools nashorn ; do
 		pushd $a
-		progress "JDK $a repo:" `hg id`
+		progress "JDK $a repo: `hg id`"
 		popd
 	done
 	popd

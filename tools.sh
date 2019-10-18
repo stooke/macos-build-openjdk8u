@@ -305,5 +305,6 @@ build_tool_path() {
 mkdir -p "$TMP_DIR"
 shift
 buildtools $*
+build_tool_path
 rm -fr "$TMP_DIR"
 
