@@ -4,7 +4,7 @@ set -e
 
 if [ "X$BUILD_MODE" == "X" ] ; then
 	# normal, dev, shenandoah, [jvmci, jfr eventually]
-	BUILD_MODE=normal
+	BUILD_MODE=dev
 fi
 
 ## release, fastdebug, slowdebug
@@ -178,6 +178,10 @@ buildjdk() {
 	progress "build jdk"
 	pushd "$JDK_DIR"
 	make images COMPILER_WARNINGS_FATAL=false CONF=$JDK_CONF
+	if $IS_DARWIN ; then
+		# seems the path handling has changed; use rpath instead of hardcoded path
+		find  "$JDK_DIR/build/$JDK_CONF/images" -type f -name libfontmanager.dylib -exec install_name_tool -change /usr/local/lib/libfreetype.6.dylib @rpath/libfreetype.dylib.6 {} \; -print
+	fi
 	popd
 }
 
@@ -216,7 +220,7 @@ patchjdk
 cleanjdk
 configurejdk
 buildjdk
-testjdk
+#testjdk
 
 progress "create distribution zip"
 
