@@ -20,8 +20,8 @@ find_xcode() {
 	XCODE_DEVELOPER_PREFIX=$XCODE_APP/Contents/Developer
 	CCTOOLCHAIN_PREFIX=$XCODE_APP/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
 	OLDPATH=$PATH
-	export PATH=$TOOL_PREFIX/usr/bin:$PATH
 	export PATH=$CCTOOLCHAIN_PREFIX/usr/bin:$PATH
+	export PATH=$TOOL_PREFIX/usr/bin:$PATH
 	echo Using xcode version $XCODE_VERSION installed in $XCODE_APP
 }
 
@@ -158,7 +158,7 @@ build_mercurial() {
 	if test -f "$TOOL_DIR/mercurial/hg" ; then
 		return
 	fi
-	download_and_open https://www.mercurial-scm.org/release/mercurial-4.9.tar.gz "$TOOL_DIR/mercurial"
+	download_and_open https://www.mercurial-scm.org/release/mercurial-5.3.tar.gz "$TOOL_DIR/mercurial"
 	pushd "$TOOL_DIR/mercurial"
 	make local
 	popd
@@ -238,7 +238,7 @@ build_webrev() {
 }
 
 build_jtreg() {
-	JTREG_URL=https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2-b14.tar.gz
+	JTREG_URL=https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz
 	if test -d "$TOOL_DIR/jtreg" ; then
 			return
 	fi
