@@ -57,7 +57,8 @@ test_javafx() {
 build_javafx() {
     progress "build javafx"
     cd "$JAVAFX_BUILD_DIR"
-    ./gradlew sdk
+    #./gradlew sdk
+    ./gradlew -PCOMPILE_WEBKIT=true -PCOMPILE_MEDIA=true sdk
 }
 
 build_javafx_demos() {
@@ -88,7 +89,7 @@ save_jdk() {
 overlay_javafx() {
     progress "overlay javafx on top of $1"
     cd "$JAVAFX_BUILD_DIR"
-    ./gradlew zips
+    ./gradlew -PCOMPILE_WEBKIT=true -PCOMPILE_MEDIA=true zips
     cd "$1"
     unzip -o "$JAVAFX_BUILD_DIR/build/bundles/javafx-sdk-overlay.zip"
 }

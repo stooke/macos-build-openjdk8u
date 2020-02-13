@@ -151,6 +151,12 @@ build_freetype() {
 	pushd "$TOOL_DIR/freetype"
 	./configure
 	make
+set -x
+	cd objs/.libs
+	otool -L libfreetype.6.dylib
+	install_name_tool -change /usr/local/lib/libfreetype.6.dylib @rpath/libfreetype.6.dylib libfreetype.6.dylib
+	otool -L libfreetype.6.dylib
+set +x
 	popd
 }
 

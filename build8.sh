@@ -19,7 +19,7 @@ fi
 
 ## add javafx to build at end
 if [ "X$BUILD_JAVAFX" == "X" ] ; then
-	BUILD_JAVAFX=false
+	BUILD_JAVAFX=true
 fi
 BUILD_SCENEBUILDER=$BUILD_JAVAFX
 
