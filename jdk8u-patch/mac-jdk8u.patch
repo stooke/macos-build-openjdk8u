@@ -84,7 +84,7 @@
      elif test "x$TOOLCHAIN_TYPE" = xxlc; then
        C_O_FLAG_HIGHEST="-O3"
        C_O_FLAG_HI="-O3 -qstrict"
-@@ -631,6 +688,22 @@
+@@ -641,6 +698,22 @@
        # command line.
        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
        LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
@@ -107,7 +107,7 @@
      fi
    fi
  
-@@ -699,6 +772,23 @@
+@@ -709,6 +782,23 @@
            LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
          fi
        fi
@@ -133,7 +133,7 @@
      if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
 --- old/common/autoconf/generated-configure.sh	2019-06-27 16:38:53.000000000 -0400
 +++ new/common/autoconf/generated-configure.sh	2019-06-27 16:38:52.000000000 -0400
-@@ -1880,8 +1880,8 @@
+@@ -1882,8 +1882,8 @@
    --with-toolchain-path   prepend these directories when searching for
                            toolchain binaries (compilers etc)
    --with-extra-path       prepend these directories to the default path
@@ -144,7 +144,7 @@
    --with-conf-name        use this as the name of the configuration [generated
                            from important configuration options]
    --with-builddeps-conf   use this configuration file for the builddeps
-@@ -13991,6 +13991,8 @@
+@@ -13994,6 +13994,8 @@
      elif test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
        OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -DLIBARCH32NAME='\"i386\"' -DLIBARCH64NAME='\"amd64\"'"
      fi
@@ -153,7 +153,7 @@
    fi
  
  
-@@ -26718,7 +26720,7 @@
+@@ -26719,7 +26721,7 @@
  $as_echo_n "checking Determining if we need to set DEVELOPER_DIR... " >&6; }
      if test -n "$DEVELOPER_DIR"; then
        if test ! -d "$DEVELOPER_DIR"; then
@@ -162,7 +162,7 @@
        fi
        if test ! -f "$DEVELOPER_DIR"/usr/bin/xcodebuild; then
          as_fn_error $? "Xcode Developer path is not valid: $DEVELOPER_DIR, it must point to Contents/Developer inside an Xcode application bundle" "$LINENO" 5
-@@ -26781,8 +26783,8 @@
+@@ -26782,8 +26784,8 @@
      # Fail-fast: verify we're building on Xcode 4, we cannot build with Xcode 5 or later
      XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
@@ -173,7 +173,7 @@
      fi
  
      # Some versions of Xcode 5 command line tools install gcc and g++ as symlinks to
-@@ -41253,6 +41255,26 @@
+@@ -41254,6 +41256,26 @@
        SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
        SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
      fi
@@ -200,7 +200,7 @@
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      PICFLAG="-KPIC"
      C_FLAG_REORDER='-xF'
-@@ -41314,6 +41336,8 @@
+@@ -41315,6 +41337,8 @@
    # Generate make dependency files
    if test "x$TOOLCHAIN_TYPE" = xgcc; then
      C_FLAG_DEPS="-MMD -MF"
@@ -209,7 +209,7 @@
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      C_FLAG_DEPS="-xMMD -xMF"
    elif test "x$TOOLCHAIN_TYPE" = xxlc; then
-@@ -41338,6 +41362,15 @@
+@@ -41339,6 +41363,15 @@
        CXXFLAGS_DEBUG_SYMBOLS="-g"
      fi
      ASFLAGS_DEBUG_SYMBOLS="-g"
@@ -225,7 +225,7 @@
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      CFLAGS_DEBUG_SYMBOLS="-g -xs"
      CXXFLAGS_DEBUG_SYMBOLS="-g0 -xs"
-@@ -41394,6 +41427,20 @@
+@@ -41395,6 +41428,20 @@
          C_O_FLAG_NORM="-O2"
          C_O_FLAG_NONE="-O0"
        fi
@@ -246,7 +246,7 @@
      elif test "x$TOOLCHAIN_TYPE" = xxlc; then
        C_O_FLAG_HIGHEST="-O3"
        C_O_FLAG_HI="-O3 -qstrict"
-@@ -42055,6 +42114,22 @@
+@@ -42071,6 +42130,22 @@
        # command line.
        CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
        LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
@@ -269,7 +269,7 @@
      fi
    fi
  
-@@ -42123,6 +42198,23 @@
+@@ -42139,6 +42214,23 @@
            LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
          fi
        fi
@@ -293,7 +293,7 @@
      fi
  
      if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
-@@ -48774,8 +48866,12 @@
+@@ -48790,8 +48882,12 @@
    fi
  
    # TODO better (platform agnostic) test

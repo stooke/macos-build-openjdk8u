@@ -10,7 +10,7 @@ Reviewed-by: kvn
 diff -r 8346c00b2ba6 -r 16c9c159df90 src/cpu/x86/vm/c1_LIRGenerator_x86.cpp
 --- a/src/cpu/x86/vm/c1_LIRGenerator_x86.cpp	Sat Jun 17 11:50:50 2017 -0700
 +++ b/src/cpu/x86/vm/c1_LIRGenerator_x86.cpp	Tue Jun 20 14:37:25 2017 +0300
-@@ -234,8 +234,8 @@
+@@ -233,8 +233,8 @@
  }
  
  
@@ -20,8 +20,8 @@ diff -r 8346c00b2ba6 -r 16c9c159df90 src/cpu/x86/vm/c1_LIRGenerator_x86.cpp
 +  if (tmp->is_valid() && c > 0 && c < max_jint) {
      if (is_power_of_2(c + 1)) {
        __ move(left, tmp);
-       __ shift_left(left, log2_intptr(c + 1), left);
-@@ -603,8 +603,8 @@
+       __ shift_left(left, log2_jint(c + 1), left);
+@@ -602,8 +602,8 @@
        bool use_constant = false;
        bool use_tmp = false;
        if (right_arg->is_constant()) {
@@ -35,7 +35,7 @@ diff -r 8346c00b2ba6 -r 16c9c159df90 src/cpu/x86/vm/c1_LIRGenerator_x86.cpp
 diff -r 8346c00b2ba6 -r 16c9c159df90 src/share/vm/c1/c1_LIRGenerator.cpp
 --- a/src/share/vm/c1/c1_LIRGenerator.cpp	Sat Jun 17 11:50:50 2017 -0700
 +++ b/src/share/vm/c1/c1_LIRGenerator.cpp	Tue Jun 20 14:37:25 2017 +0300
-@@ -545,11 +545,11 @@
+@@ -539,11 +539,11 @@
  
      case Bytecodes::_imul:
        {
@@ -53,7 +53,7 @@ diff -r 8346c00b2ba6 -r 16c9c159df90 src/share/vm/c1/c1_LIRGenerator.cpp
 diff -r 8346c00b2ba6 -r 16c9c159df90 src/share/vm/c1/c1_LIRGenerator.hpp
 --- a/src/share/vm/c1/c1_LIRGenerator.hpp	Sat Jun 17 11:50:50 2017 -0700
 +++ b/src/share/vm/c1/c1_LIRGenerator.hpp	Tue Jun 20 14:37:25 2017 +0300
-@@ -313,7 +313,7 @@
+@@ -308,7 +308,7 @@
    // is_strictfp is only needed for mul and div (and only generates different code on i486)
    void arithmetic_op(Bytecodes::Code code, LIR_Opr result, LIR_Opr left, LIR_Opr right, bool is_strictfp, LIR_Opr tmp, CodeEmitInfo* info = NULL);
    // machine dependent.  returns true if it emitted code for the multiply
