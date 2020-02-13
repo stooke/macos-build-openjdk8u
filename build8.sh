@@ -19,7 +19,7 @@ fi
 
 ## add javafx to build at end
 if [ "X$BUILD_JAVAFX" == "X" ] ; then
-	BUILD_JAVAFX=true
+	BUILD_JAVAFX=false
 fi
 BUILD_SCENEBUILDER=$BUILD_JAVAFX
 
@@ -127,7 +127,10 @@ patchjdk() {
 	done
 	# fix concurrency crash
 	cd "$JDK_DIR/hotspot"
-	patch -p1 <"$PATCH_DIR/8181872-jdk8u.patch"
+	patch -p1 <"$PATCH_DIR/8181872-hotspot-jdk8u.patch"
+	patch -p1 <"$PATCH_DIR/01-8062370-hotspot-jdk8u.patch"
+	patch -p1 <"$PATCH_DIR/02-8060721-hotspot-jdk8u.patch"
+	patch -p1 <"$PATCH_DIR/8138820-hotspot-jdk8u.patch"
 }
 
 revertjdk() {
@@ -137,6 +140,9 @@ revertjdk() {
 		cd "$JDK_DIR/$a"
 		hg revert .
 	done
+	cd "$JDK_DIR"
+	find . -name \*.rej -exec rm {} \; -print
+ 	find . -name \*.orig -exec rm {} \; -print
 }
 
 cleanjdk() {

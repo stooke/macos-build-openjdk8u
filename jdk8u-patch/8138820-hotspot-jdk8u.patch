@@ -1,0 +1,26 @@
+# HG changeset patch
+# User twisti
+# Date 1444417745 36000
+# Node ID 6c4a9b1af9993690fe97934bb8fbdfed5c12675c
+# Parent  71e75172487bbe0465fa15c168143f16d9e0b977
+8138820: JDK Hotspot build fails with Xcode 7.0.1
+Reviewed-by: iveresov
+
+diff -r d975dfffada6 make/bsd/makefiles/gcc.make
+--- a/make/bsd/makefiles/gcc.make	Tue Feb 04 02:11:25 2020 +0000
++++ b/make/bsd/makefiles/gcc.make	Thu Feb 13 09:47:43 2020 -0500
+@@ -314,10 +314,10 @@
+ 
+ # Work around some compiler bugs.
+ ifeq ($(USE_CLANG), true)
+-  ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 2), 1)
+-    OPT_CFLAGS/loopTransform.o += $(OPT_CFLAGS/NOOPT)
+-    OPT_CFLAGS/unsafe.o += -O1
+-  endif
++  # Known to fail with clang <= 7.0; 
++  # do no optimize these on later clang until verified
++  OPT_CFLAGS/loopTransform.o += $(OPT_CFLAGS/NOOPT)
++  OPT_CFLAGS/unsafe.o += -O1
+ else
+   # 6835796. Problem in GCC 4.3.0 with mulnode.o optimized compilation.
+   ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 3), 1)
