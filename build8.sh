@@ -194,9 +194,7 @@ buildjdk() {
 testjdk() {
 	progress "test jdk"
 	pushd "$JDK_DIR"
-	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="tier1" 
-	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="hotspot_tier1" 
-	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_tier1" 
+	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="tier1" 
 	popd
 }
 
