@@ -1,0 +1,983 @@
+diff --git a/make/gensrc/GensrcMisc.gmk b/make/gensrc/GensrcMisc.gmk
+--- a/make/gensrc/GensrcMisc.gmk
++++ b/make/gensrc/GensrcMisc.gmk
+@@ -25,7 +25,7 @@
+ 
+ include ProfileNames.gmk
+ 
+-##########################################################################################
++################################################################################
+ # Install the launcher name, release version string, full version
+ # string and the runtime name into the Version.java file.
+ # To be printed by java -version
+@@ -60,78 +60,51 @@
+ 
+ GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/sun/tools/jconsole/Version.java
+ 
+-##########################################################################################
+-
+-GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/sun/nio/ch/SocketOptionRegistry.java
+-
+-GENSRC_SOR_SRC := $(JDK_TOPDIR)/make/src/native/genconstants/ch
+-GENSRC_SOR_SRC_FILE := genSocketOptionRegistry.c
+-GENSRC_SOR_BIN := $(JDK_OUTPUTDIR)/btnative/genSocketOptionRegistry
+-
+-SOR_COPYRIGHT_YEARS = $(shell $(CAT) $(GENSRC_SOR_SRC)/$(GENSRC_SOR_SRC_FILE) | \
+-    $(NAWK) '/^.*Copyright.*Oracle/ { printf "%s %s",$$4,$$5 }')
++################################################################################
+ 
+-$(eval $(call SetupNativeCompilation,BUILD_GENSRC_SOR_EXE, \
+-    SRC := $(GENSRC_SOR_SRC), \
+-    INCLUDE_FILES := $(GENSRC_SOR_SRC_FILE), \
+-    LANG := C, \
+-    CC := $(BUILD_CC), \
+-    LDEXE := $(BUILD_LD), \
+-    OBJECT_DIR := $(GENSRC_SOR_BIN), \
+-    OUTPUT_DIR := $(GENSRC_SOR_BIN), \
+-    PROGRAM := genSocketOptionRegistry))
+-
+-SOR_PREGEN_FILE := $(JDK_TOPDIR)/src/closed/solaris/classes/sun/nio/ch/SocketOptionRegistry-$(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU_ARCH).java.template
+-
+-ifeq ($(wildcard $(SOR_PREGEN_FILE)), )
+-  $(JDK_OUTPUTDIR)/gensrc/sun/nio/ch/SocketOptionRegistry.java: $(BUILD_GENSRC_SOR_EXE)
+-	$(MKDIR) -p $(@D)
+-	$(RM) $@ $@.tmp
+-	NAWK="$(NAWK)" SH="$(SH)" $(SH) -e $(JDK_TOPDIR)/make/scripts/addNotices.sh "$(SOR_COPYRIGHT_YEARS)" > $@.tmp
+-	$(BUILD_GENSRC_SOR_EXE) >> $@.tmp
+-	$(MV) $@.tmp $@
+-else
+-  $(JDK_OUTPUTDIR)/gensrc/sun/nio/ch/SocketOptionRegistry.java: $(SOR_PREGEN_FILE)
+-	$(call install-file)
++ifneq ($(filter $(TOOLCHAIN_TYPE), gcc clang), )
++  # Need to specify language since the template file has a non standard
++  # extension.
++  CPP_FLAGS += -x c
++else ifeq ($(TOOLCHAIN_TYPE), microsoft)
++  CPP_FLAGS += -nologo
+ endif
+ 
+-##########################################################################################
++# Generate a java source file from a template through the C preprocessor for the
++# target system. First extract the copyright notice at the start of the file.
++# Run the preprocessor. Filter out the default compiler stderr output on
++# Windows. Filter out all the header files output. Remove all "PREFIX_" strings
++# that were added to variable references in the template files to avoid being
++# matched by the preprocessor. Remove any #line directives left by the
++# preprocessor.
++define generate-preproc-src
++	$(eval $(call MakeDir, $(@D)))
++	( $(NAWK) '/@@END_COPYRIGHT@@/{exit}1' $< && \
++	  $(CPP) $(CPP_FLAGS) $(SYSROOT_CFLAGS) $< \
++	      | $(GREP) -v '^$(<F)$$'  \
++	      | $(NAWK) '/@@START_HERE@@/,0' \
++	      | $(SED) -e 's/@@START_HERE@@/\/\/ AUTOMATICALLY GENERATED FILE - DO NOT EDIT/' \
++	      -e 's/PREFIX_//' -e 's/^#.*//' \
++	) > $@
++endef
++
++GENSRC_SOR_FILE += $(JDK_OUTPUTDIR)/gensrc/sun/nio/ch/SocketOptionRegistry.java
++
++$(GENSRC_SOR_FILE): \
++    $(JDK_TOPDIR)/src/share/classes/sun/nio/ch/SocketOptionRegistry.java.template
++	$(generate-preproc-src)
++
++GENSRC_MISC += $(GENSRC_SOR_FILE)
++
++################################################################################
+ 
+ ifneq ($(OPENJDK_TARGET_OS), windows)
+ 
+-  GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/UnixConstants.java
+-
+-  GENSRC_UC_SRC := $(JDK_TOPDIR)/make/src/native/genconstants/fs
+-  GENSRC_UC_SRC_FILE := genUnixConstants.c
+-  GENSRC_UC_BIN := $(JDK_OUTPUTDIR)/btnative/genUnixConstants
+-
+-  UC_COPYRIGHT_YEARS = $(shell $(CAT) $(GENSRC_UC_SRC)/$(GENSRC_UC_SRC_FILE) | \
+-      $(NAWK) '/^.*Copyright.*Oracle/ { printf "%s %s",$$4,$$5 }')
+-
+-  $(eval $(call SetupNativeCompilation,BUILD_GENSRC_UC_EXE, \
+-      SRC := $(GENSRC_UC_SRC), \
+-      INCLUDE_FILES := $(GENSRC_UC_SRC_FILE), \
+-      LANG := C, \
+-      CC := $(BUILD_CC), \
+-      LDEXE := $(BUILD_CC), \
+-      CFLAGS := $(filter -D%, $(CFLAGS_JDKEXE)), \
+-      OBJECT_DIR := $(GENSRC_UC_BIN), \
+-      OUTPUT_DIR := $(GENSRC_UC_BIN), \
+-      PROGRAM := genUnixConstants))
+-
+-  UC_PREGEN_FILE := $(JDK_TOPDIR)/src/closed/solaris/classes/sun/nio/fs/UnixConstants-$(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU_ARCH).java.template
+-
+-  ifeq ($(wildcard $(UC_PREGEN_FILE)), )
+-    $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/UnixConstants.java: $(BUILD_GENSRC_UC_EXE)
+-	$(MKDIR) -p $(@D)
+-	$(RM) $@ $@.tmp
+-	NAWK="$(NAWK)" SH="$(SH)" $(SH) -e $(JDK_TOPDIR)/make/scripts/addNotices.sh "$(UC_COPYRIGHT_YEARS)" > $@.tmp
+-	$(BUILD_GENSRC_UC_EXE) >> $@.tmp
+-	$(MV) $@.tmp $@
+-  else
+-    $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/UnixConstants.java: $(UC_PREGEN_FILE)
+-	$(call install-file)
+-  endif
++  GENSRC_UC_FILE := $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/UnixConstants.java
++  $(GENSRC_UC_FILE): \
++      $(JDK_TOPDIR)/src/unix/classes/sun/nio/fs/UnixConstants.java.template
++	$(generate-preproc-src)
++ GENSRC_MISC += $(GENSRC_UC_FILE)
+ 
+ endif
+ 
+@@ -139,32 +112,13 @@
+ 
+ ifeq ($(OPENJDK_TARGET_OS), solaris)
+ 
+-  GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/SolarisConstants.java
+-
+-  GENSRC_SOL_SRC := $(JDK_TOPDIR)/make/src/native/genconstants/fs
+-  GENSRC_SOL_SRC_FILE := genSolarisConstants.c
+-  GENSRC_SOL_BIN := $(JDK_OUTPUTDIR)/btnative/genSolarisConstants
+-
+-  SOL_COPYRIGHT_YEARS = $(shell $(CAT) $(GENSRC_SOL_SRC)/$(GENSRC_SOL_SRC_FILE) | \
+-      $(NAWK) '/^.*Copyright.*Oracle/ { printf "%s %s",$$4,$$5 }')
++  GENSRC_SC_FILE := $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/SolarisConstants.java
+ 
+-  $(eval $(call SetupNativeCompilation,BUILD_GENSRC_SOL_EXE, \
+-      SRC := $(GENSRC_SOL_SRC), \
+-      INCLUDE_FILES := $(GENSRC_SOL_SRC_FILE), \
+-      LANG := C, \
+-      CC := $(BUILD_CC), \
+-      LDEXE := $(BUILD_CC), \
+-      OBJECT_DIR := $(GENSRC_SOL_BIN), \
+-      OUTPUT_DIR := $(GENSRC_SOL_BIN), \
+-      PROGRAM := genSolarisConstants))
++  $(GENSRC_SC_FILE): \
++      $(JDK_TOPDIR)/src/solaris/classes/sun/nio/fs/SolarisConstants.java.template
++	$(generate-preproc-src)
+ 
+-  $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/SolarisConstants.java: $(BUILD_GENSRC_SOL_EXE)
+-	$(MKDIR) -p $(@D)
+-	$(RM) $@ $@.tmp
+-	NAWK="$(NAWK)" SH="$(SH)" $(SH) -e $(JDK_TOPDIR)/make/scripts/addNotices.sh "$(SOL_COPYRIGHT_YEARS)" > $@.tmp
+-	$(BUILD_GENSRC_SOL_EXE) >> $@.tmp
+-	$(MV) $@.tmp $@
+-
++  GENSRC_MISC += $(GENSRC_SC_FILE)
+ 
+ endif
+ 
+diff --git a/make/src/native/genconstants/ch/genSocketOptionRegistry.c b/make/src/native/genconstants/ch/genSocketOptionRegistry.c
+deleted file mode 100644
+--- a/make/src/native/genconstants/ch/genSocketOptionRegistry.c
++++ /dev/null
+@@ -1,131 +0,0 @@
+-/*
+- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+- *
+- * This code is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License version 2 only, as
+- * published by the Free Software Foundation.  Oracle designates this
+- * particular file as subject to the "Classpath" exception as provided
+- * by Oracle in the LICENSE file that accompanied this code.
+- *
+- * This code is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+- * version 2 for more details (a copy is included in the LICENSE file that
+- * accompanied this code).
+- *
+- * You should have received a copy of the GNU General Public License version
+- * 2 along with this work; if not, write to the Free Software Foundation,
+- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+- *
+- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+- * or visit www.oracle.com if you need additional information or have any
+- * questions.
+- */
+-
+-#include <stdio.h>
+-#ifdef _WIN32
+-#include <winsock2.h>
+-#include <ws2tcpip.h>
+-#else
+-#include <sys/types.h>
+-#include <sys/socket.h>
+-#include <netinet/in.h>
+-#include <netinet/tcp.h>
+-#endif
+-
+-/**
+- * Generates sun.nio.ch.SocketOptionRegistry, a class that maps Java-level
+- * socket options to the platform specific level and option.
+- */
+-
+-static void out(char* s) {
+-    printf("%s\n", s);
+-}
+-
+-static void emit(const char *name, char * family, int level, int optname) {
+-    printf("            map.put(new RegistryKey(%s, %s),", name, family);
+-    printf(" new OptionKey(%d, %d));\n", level, optname);
+-}
+-
+-static void emit_unspec(const char *name, int level, int optname) {
+-    emit(name, "Net.UNSPEC", level, optname);
+-}
+-
+-static  void emit_inet(const char *name, int level, int optname) {
+-    emit(name, "StandardProtocolFamily.INET", level, optname);
+-}
+-
+-static void emit_inet6(const char *name, int level, int optname) {
+-    emit(name, "StandardProtocolFamily.INET6", level, optname);
+-}
+-
+-int main(int argc, const char* argv[]) {
+-    out("// AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                  ");
+-    out("package sun.nio.ch;                                                            ");
+-    out("import java.net.SocketOption;                                                  ");
+-    out("import java.net.StandardSocketOptions;                                         ");
+-    out("import java.net.ProtocolFamily;                                                ");
+-    out("import java.net.StandardProtocolFamily;                                        ");
+-    out("import java.util.Map;                                                          ");
+-    out("import java.util.HashMap;                                                      ");
+-    out("class SocketOptionRegistry {                                                   ");
+-    out("    private SocketOptionRegistry() { }                                         ");
+-    out("    private static class RegistryKey {                                         ");
+-    out("        private final SocketOption<?> name;                                    ");
+-    out("        private final ProtocolFamily family;                                   ");
+-    out("        RegistryKey(SocketOption<?> name, ProtocolFamily family) {             ");
+-    out("            this.name = name;                                                  ");
+-    out("            this.family = family;                                              ");
+-    out("        }                                                                      ");
+-    out("        public int hashCode() {                                                ");
+-    out("            return name.hashCode() + family.hashCode();                        ");
+-    out("        }                                                                      ");
+-    out("        public boolean equals(Object ob) {                                     ");
+-    out("            if (ob == null) return false;                                      ");
+-    out("            if (!(ob instanceof RegistryKey)) return false;                    ");
+-    out("            RegistryKey other = (RegistryKey)ob;                               ");
+-    out("            if (this.name != other.name) return false;                         ");
+-    out("            if (this.family != other.family) return false;                     ");
+-    out("            return true;                                                       ");
+-    out("        }                                                                      ");
+-    out("    }                                                                          ");
+-    out("    private static class LazyInitialization {                                  ");
+-    out("        static final Map<RegistryKey,OptionKey> options = options();           ");
+-    out("        private static Map<RegistryKey,OptionKey> options() {                  ");
+-    out("            Map<RegistryKey,OptionKey> map =                                   ");
+-    out("                new HashMap<RegistryKey,OptionKey>();                          ");
+-
+-    emit_unspec("StandardSocketOptions.SO_BROADCAST", SOL_SOCKET, SO_BROADCAST);
+-    emit_unspec("StandardSocketOptions.SO_KEEPALIVE", SOL_SOCKET, SO_KEEPALIVE);
+-    emit_unspec("StandardSocketOptions.SO_LINGER",    SOL_SOCKET, SO_LINGER);
+-    emit_unspec("StandardSocketOptions.SO_SNDBUF",    SOL_SOCKET, SO_SNDBUF);
+-    emit_unspec("StandardSocketOptions.SO_RCVBUF",    SOL_SOCKET, SO_RCVBUF);
+-    emit_unspec("StandardSocketOptions.SO_REUSEADDR", SOL_SOCKET, SO_REUSEADDR);
+-    emit_unspec("StandardSocketOptions.TCP_NODELAY",  IPPROTO_TCP, TCP_NODELAY);
+-
+-    emit_inet("StandardSocketOptions.IP_TOS",            IPPROTO_IP,     IP_TOS);
+-    emit_inet("StandardSocketOptions.IP_MULTICAST_IF",   IPPROTO_IP,     IP_MULTICAST_IF);
+-    emit_inet("StandardSocketOptions.IP_MULTICAST_TTL",  IPPROTO_IP,     IP_MULTICAST_TTL);
+-    emit_inet("StandardSocketOptions.IP_MULTICAST_LOOP", IPPROTO_IP,     IP_MULTICAST_LOOP);
+-
+-#ifdef AF_INET6
+-    emit_inet6("StandardSocketOptions.IP_TOS",            IPPROTO_IPV6,  IPV6_TCLASS);
+-    emit_inet6("StandardSocketOptions.IP_MULTICAST_IF",   IPPROTO_IPV6,  IPV6_MULTICAST_IF);
+-    emit_inet6("StandardSocketOptions.IP_MULTICAST_TTL",  IPPROTO_IPV6,  IPV6_MULTICAST_HOPS);
+-    emit_inet6("StandardSocketOptions.IP_MULTICAST_LOOP", IPPROTO_IPV6,  IPV6_MULTICAST_LOOP);
+-#endif
+-
+-    emit_unspec("ExtendedSocketOption.SO_OOBINLINE", SOL_SOCKET, SO_OOBINLINE);
+-
+-    out("            return map;                                                        ");
+-    out("        }                                                                      ");
+-    out("    }                                                                          ");
+-    out("    public static OptionKey findOption(SocketOption<?> name, ProtocolFamily family) { ");
+-    out("        RegistryKey key = new RegistryKey(name, family);                       ");
+-    out("        return LazyInitialization.options.get(key);                            ");
+-    out("    }                                                                          ");
+-    out("}                                                                              ");
+-
+-    return 0;
+-}
+diff --git a/make/src/native/genconstants/fs/genSolarisConstants.c b/make/src/native/genconstants/fs/genSolarisConstants.c
+deleted file mode 100644
+--- a/make/src/native/genconstants/fs/genSolarisConstants.c
++++ /dev/null
+@@ -1,105 +0,0 @@
+-/*
+- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+- *
+- * This code is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License version 2 only, as
+- * published by the Free Software Foundation.  Oracle designates this
+- * particular file as subject to the "Classpath" exception as provided
+- * by Oracle in the LICENSE file that accompanied this code.
+- *
+- * This code is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+- * version 2 for more details (a copy is included in the LICENSE file that
+- * accompanied this code).
+- *
+- * You should have received a copy of the GNU General Public License version
+- * 2 along with this work; if not, write to the Free Software Foundation,
+- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+- *
+- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+- * or visit www.oracle.com if you need additional information or have any
+- * questions.
+- */
+-
+-#include <stdio.h>
+-#include <errno.h>
+-#include <unistd.h>
+-#include <sys/acl.h>
+-#include <fcntl.h>
+-#include <sys/stat.h>
+-
+-/**
+- * Generates sun.nio.fs.SolarisConstants
+- */
+-
+-static void out(char* s) {
+-    printf("%s\n", s);
+-}
+-
+-static void emit(char* name, int value) {
+-    printf("    static final int %s = %d;\n", name, value);
+-}
+-
+-static void emitX(char* name, int value) {
+-    printf("    static final int %s = 0x%x;\n", name, value);
+-}
+-
+-#define DEF(X) emit(#X, X);
+-#define DEFX(X) emitX(#X, X);
+-
+-int main(int argc, const char* argv[]) {
+-    out("// AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                  ");
+-    out("package sun.nio.fs;                                                            ");
+-    out("class SolarisConstants {                                                       ");
+-    out("    private SolarisConstants() { }                                             ");
+-
+-    // extended attributes
+-    DEFX(O_XATTR);
+-    DEF(_PC_XATTR_ENABLED);
+-
+-    // ACL configuration
+-    DEF(_PC_ACL_ENABLED);
+-    DEFX(_ACL_ACE_ENABLED);
+-
+-    // ACL commands
+-    DEFX(ACE_GETACL);
+-    DEFX(ACE_SETACL);
+-
+-    // ACL mask/flags/types
+-    emitX("ACE_ACCESS_ALLOWED_ACE_TYPE",        0x0000);
+-    emitX("ACE_ACCESS_DENIED_ACE_TYPE",         0x0001);
+-    emitX("ACE_SYSTEM_AUDIT_ACE_TYPE",          0x0002);
+-    emitX("ACE_SYSTEM_ALARM_ACE_TYPE",          0x0003);
+-    emitX("ACE_READ_DATA",                      0x00000001);
+-    emitX("ACE_LIST_DIRECTORY",                 0x00000001);
+-    emitX("ACE_WRITE_DATA",                     0x00000002);
+-    emitX("ACE_ADD_FILE",                       0x00000002);
+-    emitX("ACE_APPEND_DATA",                    0x00000004);
+-    emitX("ACE_ADD_SUBDIRECTORY",               0x00000004);
+-    emitX("ACE_READ_NAMED_ATTRS",               0x00000008);
+-    emitX("ACE_WRITE_NAMED_ATTRS",              0x00000010);
+-    emitX("ACE_EXECUTE",                        0x00000020);
+-    emitX("ACE_DELETE_CHILD",                   0x00000040);
+-    emitX("ACE_READ_ATTRIBUTES",                0x00000080);
+-    emitX("ACE_WRITE_ATTRIBUTES",               0x00000100);
+-    emitX("ACE_DELETE",                         0x00010000);
+-    emitX("ACE_READ_ACL",                       0x00020000);
+-    emitX("ACE_WRITE_ACL",                      0x00040000);
+-    emitX("ACE_WRITE_OWNER",                    0x00080000);
+-    emitX("ACE_SYNCHRONIZE",                    0x00100000);
+-    emitX("ACE_FILE_INHERIT_ACE",               0x0001);
+-    emitX("ACE_DIRECTORY_INHERIT_ACE",          0x0002);
+-    emitX("ACE_NO_PROPAGATE_INHERIT_ACE",       0x0004);
+-    emitX("ACE_INHERIT_ONLY_ACE",               0x0008);
+-    emitX("ACE_SUCCESSFUL_ACCESS_ACE_FLAG",     0x0010);
+-    emitX("ACE_FAILED_ACCESS_ACE_FLAG",         0x0020);
+-    emitX("ACE_IDENTIFIER_GROUP",               0x0040);
+-    emitX("ACE_OWNER",                          0x1000);
+-    emitX("ACE_GROUP",                          0x2000);
+-    emitX("ACE_EVERYONE",                       0x4000);
+-
+-    out("}                                                                              ");
+-    return 0;
+-}
+diff --git a/make/src/native/genconstants/fs/genUnixConstants.c b/make/src/native/genconstants/fs/genUnixConstants.c
+deleted file mode 100644
+--- a/make/src/native/genconstants/fs/genUnixConstants.c
++++ /dev/null
+@@ -1,141 +0,0 @@
+-/*
+- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+- *
+- * This code is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License version 2 only, as
+- * published by the Free Software Foundation.  Oracle designates this
+- * particular file as subject to the "Classpath" exception as provided
+- * by Oracle in the LICENSE file that accompanied this code.
+- *
+- * This code is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+- * version 2 for more details (a copy is included in the LICENSE file that
+- * accompanied this code).
+- *
+- * You should have received a copy of the GNU General Public License version
+- * 2 along with this work; if not, write to the Free Software Foundation,
+- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+- *
+- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+- * or visit www.oracle.com if you need additional information or have any
+- * questions.
+- */
+-
+-#include <stdio.h>
+-#include <errno.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <sys/stat.h>
+-
+-/**
+- * Generates sun.nio.fs.UnixConstants
+- */
+-
+-static void out(char* s) {
+-    printf("%s\n", s);
+-}
+-
+-static void emit(char* name, int value) {
+-    printf("    static final int %s = %d;\n", name, value);
+-}
+-
+-static void emitX(char* name, int value) {
+-    printf("    static final int %s = 0x%x;\n", name, value);
+-}
+-
+-#define DEF(X) emit(#X, X);
+-#define DEFX(X) emitX(#X, X);
+-
+-int main(int argc, const char* argv[]) {
+-    out("// AUTOMATICALLY GENERATED FILE - DO NOT EDIT                                  ");
+-    out("package sun.nio.fs;                                                            ");
+-    out("class UnixConstants {                                                          ");
+-    out("    private UnixConstants() { }                                                ");
+-
+-    // open flags
+-    DEF(O_RDONLY);
+-    DEF(O_WRONLY);
+-    DEF(O_RDWR);
+-    DEFX(O_APPEND);
+-    DEFX(O_CREAT);
+-    DEFX(O_EXCL);
+-    DEFX(O_TRUNC);
+-    DEFX(O_SYNC);
+-#ifndef O_DSYNC
+-    // At least FreeBSD doesn't define O_DSYNC
+-    emit("O_DSYNC", O_SYNC);
+-#else
+-    DEFX(O_DSYNC);
+-#endif
+-#ifdef O_NOFOLLOW
+-    DEFX(O_NOFOLLOW);
+-#else
+-    // not supported (dummy values will not be used at runtime).
+-    emitX("O_NOFOLLOW", 0x0);
+-#endif
+-
+-    // mode masks
+-    emitX("S_IAMB",
+-         (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH));
+-    DEF(S_IRUSR);
+-    DEF(S_IWUSR);
+-    DEF(S_IXUSR);
+-    DEF(S_IRGRP);
+-    DEF(S_IWGRP);
+-    DEF(S_IXGRP);
+-    DEF(S_IROTH);
+-    DEF(S_IWOTH);
+-    DEF(S_IXOTH);
+-    DEFX(S_IFMT);
+-    DEFX(S_IFREG);
+-    DEFX(S_IFDIR);
+-    DEFX(S_IFLNK);
+-    DEFX(S_IFCHR);
+-    DEFX(S_IFBLK);
+-    DEFX(S_IFIFO);
+-
+-    // access modes
+-    DEF(R_OK);
+-    DEF(W_OK);
+-    DEF(X_OK);
+-    DEF(F_OK);
+-
+-    // errors
+-    DEF(ENOENT);
+-    DEF(EACCES);
+-    DEF(EEXIST);
+-    DEF(ENOTDIR);
+-    DEF(EINVAL);
+-    DEF(EXDEV);
+-    DEF(EISDIR);
+-    DEF(ENOTEMPTY);
+-    DEF(ENOSPC);
+-    DEF(EAGAIN);
+-    DEF(ENOSYS);
+-    DEF(ELOOP);
+-    DEF(EROFS);
+-#ifndef ENODATA
+-    // Only used in Linux java source, provide any value so it compiles
+-    emit("ENODATA", ELAST);
+-#else
+-    DEF(ENODATA);
+-#endif
+-    DEF(ERANGE);
+-    DEF(EMFILE);
+-
+-    // flags used with openat/unlinkat/etc.
+-#if defined(AT_SYMLINK_NOFOLLOW) && defined(AT_REMOVEDIR)
+-    DEFX(AT_SYMLINK_NOFOLLOW)
+-    DEFX(AT_REMOVEDIR);
+-#else
+-    // not supported (dummy values will not be used at runtime).
+-    emitX("AT_SYMLINK_NOFOLLOW", 0x0);
+-    emitX("AT_REMOVEDIR", 0x0);
+-#endif
+-
+-    out("}                                                                              ");
+-
+-    return 0;
+-}
+diff --git a/src/share/classes/java/net/StandardSocketOptions.java b/src/share/classes/java/net/StandardSocketOptions.java
+--- a/src/share/classes/java/net/StandardSocketOptions.java
++++ b/src/share/classes/java/net/StandardSocketOptions.java
+@@ -187,6 +187,29 @@
+         new StdSocketOption<Boolean>("SO_REUSEADDR", Boolean.class);
+ 
+     /**
++     * Re-use port.
++     *
++     * <p> The value of this socket option is a {@code Boolean} that represents
++     * whether the option is enabled or disabled. The exact semantics of this
++     * socket option are socket type and system dependent.
++     *
++     * <p> In the case of stream-oriented sockets, this socket option usually allows
++     * multiple listening sockets to be bound to both same address
++     * and same port.
++     *
++     * <p> For datagram-oriented sockets the socket option usually allows
++     * multiple UDP sockets to be bound to the same address and port.
++     *
++     * <p> An implementation allows this socket option to be set before the
++     * socket is bound or connected. Changing the value of this socket option
++     * after the socket is bound has no effect.
++     *
++     * @since 9
++     */
++    public static final SocketOption<Boolean> SO_REUSEPORT =
++        new StdSocketOption<Boolean>("SO_REUSEPORT", Boolean.class);
++
++    /**
+      * Linger on close if data is present.
+      *
+      * <p> The value of this socket option is an {@code Integer} that controls
+diff --git a/src/share/classes/sun/nio/ch/SocketOptionRegistry.java.template b/src/share/classes/sun/nio/ch/SocketOptionRegistry.java.template
+new file mode 100644
+--- /dev/null
++++ b/src/share/classes/sun/nio/ch/SocketOptionRegistry.java.template
+@@ -0,0 +1,154 @@
++/*
++ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
++ *
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ *
++ */
++@@END_COPYRIGHT@@
++
++#include <stdio.h>
++#ifdef _WIN32
++#include <winsock2.h>
++#include <ws2tcpip.h>
++#else
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <netinet/tcp.h>
++#endif
++
++/* Defines SO_REUSEPORT */
++#if !defined(SO_REUSEPORT)
++#ifdef _WIN32
++#define SO_REUSEPORT 0
++#elif __linux__
++#define SO_REUSEPORT 15
++#elif __solaris__
++#define SO_REUSEPORT 0x100e
++#elif defined(AIX) || defined(MACOSX) || defined(__APPLE__)
++#define SO_REUSEPORT 0x0200
++#else
++#define SO_REUSEPORT 0
++#endif
++#endif
++
++/* On Solaris, "sun" is defined as a macro. Undefine to make package
++   declaration valid */
++#undef sun
++
++/* To be able to name the Java constants the same as the C constants without
++   having the preprocessor rewrite those identifiers, add PREFIX_ to all
++   identifiers matching a C constant. The PREFIX_ is filtered out in the
++   makefile. */
++
++@@START_HERE@@
++
++package sun.nio.ch;
++import java.net.SocketOption;
++import java.net.StandardSocketOptions;
++import java.net.ProtocolFamily;
++import java.net.StandardProtocolFamily;
++import java.util.Map;
++import java.util.HashMap;
++class SocketOptionRegistry {
++
++    private SocketOptionRegistry() { }
++
++    private static class RegistryKey {
++        private final SocketOption<?> name;
++        private final ProtocolFamily family;
++        RegistryKey(SocketOption<?> name, ProtocolFamily family) {
++            this.name = name;
++            this.family = family;
++        }
++        public int hashCode() {
++            return name.hashCode() + family.hashCode();
++        }
++        public boolean equals(Object ob) {
++            if (ob == null) return false;
++            if (!(ob instanceof RegistryKey)) return false;
++            RegistryKey other = (RegistryKey)ob;
++            if (this.name != other.name) return false;
++            if (this.family != other.family) return false;
++            return true;
++        }
++    }
++
++    private static class LazyInitialization {
++
++        static final Map<RegistryKey,OptionKey> options = options();
++
++        private static Map<RegistryKey,OptionKey> options() {
++            Map<RegistryKey,OptionKey> map =
++                new HashMap<RegistryKey,OptionKey>();
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_BROADCAST,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_BROADCAST));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_KEEPALIVE,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_KEEPALIVE));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_LINGER,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_LINGER));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_SNDBUF,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_SNDBUF));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_RCVBUF,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_RCVBUF));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_REUSEADDR,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_REUSEADDR));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_SO_REUSEPORT,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_REUSEPORT));
++            // IPPROTO_TCP is 6
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_TCP_NODELAY,
++                Net.UNSPEC), new OptionKey(6, TCP_NODELAY));
++
++            // IPPROTO_IP is 0
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_TOS,
++                StandardProtocolFamily.INET), new OptionKey(0, IP_TOS));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_IF,
++                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_IF));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_TTL,
++                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_TTL));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_LOOP,
++                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_LOOP));
++
++#ifdef AF_INET6
++            // IPPROTO_IPV6 is 41
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_TOS,
++                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_TCLASS));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_IF,
++                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_IF));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_TTL,
++                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_HOPS));
++            map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_LOOP,
++                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_LOOP));
++#endif
++
++            map.put(new RegistryKey(ExtendedSocketOption.PREFIX_SO_OOBINLINE,
++                Net.UNSPEC), new OptionKey(SOL_SOCKET, SO_OOBINLINE));
++            return map;
++        }
++    }
++
++    public static OptionKey findOption(SocketOption<?> name, ProtocolFamily family) {
++        RegistryKey key = new RegistryKey(name, family);
++        return LazyInitialization.options.get(key);
++    }
++}
+diff --git a/src/solaris/classes/sun/nio/fs/SolarisConstants.java.template b/src/solaris/classes/sun/nio/fs/SolarisConstants.java.template
+new file mode 100644
+--- /dev/null
++++ b/src/solaris/classes/sun/nio/fs/SolarisConstants.java.template
+@@ -0,0 +1,89 @@
++/*
++ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
++ *
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ */
++
++@@END_COPYRIGHT@@
++
++#include <stdio.h>
++#include <errno.h>
++#include <unistd.h>
++#include <sys/acl.h>
++#include <fcntl.h>
++#include <sys/stat.h>
++
++/* On Solaris, "sun" is defined as a macro. Undefine to make package
++   declaration valid */
++#undef sun
++
++/* To be able to name the Java constants the same as the C constants without
++   having the preprocessor rewrite those identifiers, add PREFIX_ to all
++   identifiers matching a C constant. The PREFIX_ is filtered out in the
++   makefile. */
++
++@@START_HERE@@
++
++package sun.nio.fs;
++class SolarisConstants {
++
++    private SolarisConstants() { }
++
++    static final int PREFIX_O_XATTR = O_XATTR;
++    static final int PREFIX__PC_XATTR_ENABLED = _PC_XATTR_ENABLED;
++    static final int PREFIX__PC_ACL_ENABLED = _PC_ACL_ENABLED;
++    static final int PREFIX__ACL_ACE_ENABLED = _ACL_ACE_ENABLED;
++    static final int PREFIX_ACE_GETACL = ACE_GETACL;
++    static final int PREFIX_ACE_SETACL = ACE_SETACL;
++    static final int PREFIX_ACE_ACCESS_ALLOWED_ACE_TYPE = ACE_ACCESS_ALLOWED_ACE_TYPE;
++    static final int PREFIX_ACE_ACCESS_DENIED_ACE_TYPE = ACE_ACCESS_DENIED_ACE_TYPE;
++    static final int PREFIX_ACE_SYSTEM_AUDIT_ACE_TYPE = ACE_SYSTEM_AUDIT_ACE_TYPE;
++    static final int PREFIX_ACE_SYSTEM_ALARM_ACE_TYPE = ACE_SYSTEM_ALARM_ACE_TYPE;
++    static final int PREFIX_ACE_READ_DATA = ACE_READ_DATA;
++    static final int PREFIX_ACE_LIST_DIRECTORY = ACE_LIST_DIRECTORY;
++    static final int PREFIX_ACE_WRITE_DATA = ACE_WRITE_DATA;
++    static final int PREFIX_ACE_ADD_FILE = ACE_ADD_FILE;
++    static final int PREFIX_ACE_APPEND_DATA = ACE_APPEND_DATA;
++    static final int PREFIX_ACE_ADD_SUBDIRECTORY = ACE_ADD_SUBDIRECTORY;
++    static final int PREFIX_ACE_READ_NAMED_ATTRS = ACE_READ_NAMED_ATTRS;
++    static final int PREFIX_ACE_WRITE_NAMED_ATTRS = ACE_WRITE_NAMED_ATTRS;
++    static final int PREFIX_ACE_EXECUTE = ACE_EXECUTE;
++    static final int PREFIX_ACE_DELETE_CHILD = ACE_DELETE_CHILD;
++    static final int PREFIX_ACE_READ_ATTRIBUTES = ACE_READ_ATTRIBUTES;
++    static final int PREFIX_ACE_WRITE_ATTRIBUTES = ACE_WRITE_ATTRIBUTES;
++    static final int PREFIX_ACE_DELETE = ACE_DELETE;
++    static final int PREFIX_ACE_READ_ACL = ACE_READ_ACL;
++    static final int PREFIX_ACE_WRITE_ACL = ACE_WRITE_ACL;
++    static final int PREFIX_ACE_WRITE_OWNER = ACE_WRITE_OWNER;
++    static final int PREFIX_ACE_SYNCHRONIZE = ACE_SYNCHRONIZE;
++    static final int PREFIX_ACE_FILE_INHERIT_ACE = ACE_FILE_INHERIT_ACE;
++    static final int PREFIX_ACE_DIRECTORY_INHERIT_ACE = ACE_DIRECTORY_INHERIT_ACE;
++    static final int PREFIX_ACE_NO_PROPAGATE_INHERIT_ACE = ACE_NO_PROPAGATE_INHERIT_ACE;
++    static final int PREFIX_ACE_INHERIT_ONLY_ACE = ACE_INHERIT_ONLY_ACE;
++    static final int PREFIX_ACE_SUCCESSFUL_ACCESS_ACE_FLAG = ACE_SUCCESSFUL_ACCESS_ACE_FLAG;
++    static final int PREFIX_ACE_FAILED_ACCESS_ACE_FLAG = ACE_FAILED_ACCESS_ACE_FLAG;
++    static final int PREFIX_ACE_IDENTIFIER_GROUP = ACE_IDENTIFIER_GROUP;
++    static final int PREFIX_ACE_OWNER = ACE_OWNER;
++    static final int PREFIX_ACE_GROUP = ACE_GROUP;
++    static final int PREFIX_ACE_EVERYONE = ACE_EVERYONE;
++}
+diff --git a/src/unix/classes/sun/nio/fs/UnixConstants.java.template b/src/unix/classes/sun/nio/fs/UnixConstants.java.template
+new file mode 100644
+--- /dev/null
++++ b/src/unix/classes/sun/nio/fs/UnixConstants.java.template
+@@ -0,0 +1,132 @@
++/*
++ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
++ *
++ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
++ *
++ * This code is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 only, as
++ * published by the Free Software Foundation.  Oracle designates this
++ * particular file as subject to the "Classpath" exception as provided
++ * by Oracle in the LICENSE file that accompanied this code.
++ *
++ * This code is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * version 2 for more details (a copy is included in the LICENSE file that
++ * accompanied this code).
++ *
++ * You should have received a copy of the GNU General Public License version
++ * 2 along with this work; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
++ * or visit www.oracle.com if you need additional information or have any
++ * questions.
++ *
++ */
++
++@@END_COPYRIGHT@@
++
++#include <stdio.h>
++#include <errno.h>
++#include <unistd.h>
++#include <fcntl.h>
++#include <sys/stat.h>
++
++/* On Solaris, "sun" is defined as a macro. Undefine to make package
++   declaration valid */
++#undef sun
++
++/* To be able to name the Java constants the same as the C constants without
++   having the preprocessor rewrite those identifiers, add PREFIX_ to all
++   identifiers matching a C constant. The PREFIX_ is filtered out in the
++   makefile. */
++
++@@START_HERE@@
++
++package sun.nio.fs;
++class UnixConstants {
++    private UnixConstants() { }
++    static final int PREFIX_O_RDONLY = O_RDONLY;
++    static final int PREFIX_O_WRONLY = O_WRONLY;
++    static final int PREFIX_O_RDWR = O_RDWR;
++    static final int PREFIX_O_APPEND = O_APPEND;
++    static final int PREFIX_O_CREAT = O_CREAT;
++    static final int PREFIX_O_EXCL = O_EXCL;
++    static final int PREFIX_O_TRUNC = O_TRUNC;
++    static final int PREFIX_O_SYNC = O_SYNC;
++
++#ifndef O_DSYNC
++    // At least FreeBSD doesn't define O_DSYNC
++    static final int PREFIX_O_DSYNC = O_SYNC;
++#else
++    static final int PREFIX_O_DSYNC = O_DSYNC;
++#endif
++
++#ifdef O_NOFOLLOW
++    static final int PREFIX_O_NOFOLLOW = O_NOFOLLOW;
++#else
++    // not supported (dummy values will not be used at runtime).
++    static final int PREFIX_O_NOFOLLOW = 00;
++#endif
++
++
++    static final int PREFIX_S_IAMB =
++        (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
++    static final int PREFIX_S_IRUSR = S_IRUSR;
++    static final int PREFIX_S_IWUSR = S_IWUSR;
++    static final int PREFIX_S_IXUSR = S_IXUSR;
++    static final int PREFIX_S_IRGRP = S_IRGRP;
++    static final int PREFIX_S_IWGRP = S_IWGRP;
++    static final int PREFIX_S_IXGRP = S_IXGRP;
++    static final int PREFIX_S_IROTH = S_IROTH;
++    static final int PREFIX_S_IWOTH = S_IWOTH;
++    static final int PREFIX_S_IXOTH = S_IXOTH;
++
++    static final int PREFIX_S_IFMT = S_IFMT;
++    static final int PREFIX_S_IFREG = S_IFREG;
++    static final int PREFIX_S_IFDIR = S_IFDIR;
++    static final int PREFIX_S_IFLNK = S_IFLNK;
++    static final int PREFIX_S_IFCHR = S_IFCHR;
++    static final int PREFIX_S_IFBLK = S_IFBLK;
++    static final int PREFIX_S_IFIFO = S_IFIFO;
++    static final int PREFIX_R_OK = R_OK;
++    static final int PREFIX_W_OK = W_OK;
++    static final int PREFIX_X_OK = X_OK;
++    static final int PREFIX_F_OK = F_OK;
++    static final int PREFIX_ENOENT = ENOENT;
++    static final int PREFIX_ENXIO = ENXIO;
++    static final int PREFIX_EACCES = EACCES;
++    static final int PREFIX_EEXIST = EEXIST;
++    static final int PREFIX_ENOTDIR = ENOTDIR;
++    static final int PREFIX_EINVAL = EINVAL;
++    static final int PREFIX_EXDEV = EXDEV;
++    static final int PREFIX_EISDIR = EISDIR;
++    static final int PREFIX_ENOTEMPTY = ENOTEMPTY;
++    static final int PREFIX_ENOSPC = ENOSPC;
++    static final int PREFIX_EAGAIN = EAGAIN;
++    static final int PREFIX_ENOSYS = ENOSYS;
++    static final int PREFIX_ELOOP = ELOOP;
++    static final int PREFIX_EROFS = EROFS;
++
++#ifndef ENODATA
++    // Only used in Linux java source, provide any value so it compiles
++    static final int PREFIX_ENODATA = ELAST;
++#else
++    static final int PREFIX_ENODATA = ENODATA;
++#endif
++
++    static final int PREFIX_ERANGE = ERANGE;
++    static final int PREFIX_EMFILE = EMFILE;
++
++    // flags used with openat/unlinkat/etc.
++#if defined(AT_SYMLINK_NOFOLLOW) && defined(AT_REMOVEDIR)
++    static final int PREFIX_AT_SYMLINK_NOFOLLOW = AT_SYMLINK_NOFOLLOW;
++    static final int PREFIX_AT_REMOVEDIR = AT_REMOVEDIR;
++#else
++    // not supported (dummy values will not be used at runtime).
++    static final int PREFIX_AT_SYMLINK_NOFOLLOW = 00;
++    static final int PREFIX_AT_REMOVEDIR = 00;
++#endif
++
++}

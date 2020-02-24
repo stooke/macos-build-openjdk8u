@@ -2,6 +2,8 @@
 
 set -e
 
+BUILD_LOG="LOG=debug"
+
 if [ "X$BUILD_MODE" == "X" ] ; then
 	# normal, dev, shenandoah, [jvmci, jfr eventually]
 	BUILD_MODE=dev
@@ -22,7 +24,6 @@ if [ "X$BUILD_JAVAFX" == "X" ] ; then
 	BUILD_JAVAFX=false
 fi
 BUILD_SCENEBUILDER=$BUILD_JAVAFX
-
 
 ### no need to change anything below this line unless something went wrong
 
@@ -125,6 +126,9 @@ patchjdk() {
 			 patch -p1 <$b
 		done
 	done
+	# fix genSocketOptionRegistry build error on 10.8
+	cd "$JDK_DIR/jdk"
+	patch -p1 <"$PATCH_DIR/8152545-jdk-jdk8u.patch"
 	# fix concurrency crash
 	cd "$JDK_DIR/hotspot"
 	patch -p1 <"$PATCH_DIR/8181872-hotspot-jdk8u.patch"
@@ -183,7 +187,7 @@ configurejdk() {
 buildjdk() {
 	progress "build jdk"
 	pushd "$JDK_DIR"
-	make images COMPILER_WARNINGS_FATAL=false CONF=$JDK_CONF
+	make images $BUILD_LOG COMPILER_WARNINGS_FATAL=false CONF=$JDK_CONF
 	if $IS_DARWIN ; then
 		# seems the path handling has changed; use rpath instead of hardcoded path
 		find  "$JDK_DIR/build/$JDK_CONF/images" -type f -name libfontmanager.dylib -exec install_name_tool -change /usr/local/lib/libfreetype.6.dylib @rpath/libfreetype.dylib.6 {} \; -print
@@ -217,12 +221,12 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-downloadjdksrc
-print_jdk_repo_id
-revertjdk
-patchjdk
-cleanjdk
-configurejdk
+#downloadjdksrc
+#print_jdk_repo_id
+#revertjdk
+#patchjdk
+#cleanjdk
+#configurejdk
 buildjdk
 #testjdk
 
@@ -242,4 +246,5 @@ else
 	zip -r "$ZIP_NAME" .
 	popd
 fi
+
 
