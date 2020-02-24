@@ -221,12 +221,12 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-#downloadjdksrc
-#print_jdk_repo_id
+downloadjdksrc
+print_jdk_repo_id
 #revertjdk
-#patchjdk
+patchjdk
 #cleanjdk
-#configurejdk
+configurejdk
 buildjdk
 #testjdk
 

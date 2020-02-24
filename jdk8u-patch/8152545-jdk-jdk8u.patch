@@ -1,3 +1,11 @@
+# HG changeset patch
+# User erikj
+# Date 1458825817 -3600
+# Node ID e2e31830425292c5ac0f66f5174265b8b5d3b7ca
+# Parent  a18dbcbe2e1ac6e99d27970a88b7ab62a014e5af
+8152545: Use preprocessor instead of compiling a program to generate native nio constants
+Reviewed-by: alanb
+
 diff --git a/make/gensrc/GensrcMisc.gmk b/make/gensrc/GensrcMisc.gmk
 --- a/make/gensrc/GensrcMisc.gmk
 +++ b/make/gensrc/GensrcMisc.gmk
