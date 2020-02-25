@@ -21,7 +21,7 @@ fi
 
 ## add javafx to build at end
 if [ "X$BUILD_JAVAFX" == "X" ] ; then
-	BUILD_JAVAFX=false
+	BUILD_JAVAFX=true
 fi
 BUILD_SCENEBUILDER=$BUILD_JAVAFX
 
@@ -110,31 +110,32 @@ print_jdk_repo_id() {
 	popd
 }
 
+applypatch() {
+	cd "$JDK_DIR/$1"
+	echo "applying $1 $2"
+	patch -p1 <$2
+}
+
 patchjdk() {
 	progress "patch jdk"
-	cd "$JDK_DIR"
-	patch -p1 <"$PATCH_DIR/mac-jdk8u.patch"
+	applypatch . "$PATCH_DIR/mac-jdk8u.patch"
 	for a in hotspot jdk ; do 
-		cd "$JDK_DIR/$a"
 		for b in "$PATCH_DIR/mac-jdk8u-$a*.patch" ; do 
-			 patch -p1 <$b
+			applypatch $a "$b"
 		done
 	done
 	for a in hotspot ; do 
-		cd "$JDK_DIR/$a"
 		for b in "$PATCH_DIR/linux-jdk8u-$a*.patch" ; do 
-			 patch -p1 <$b
+			applypatch $a "$b"
 		done
 	done
 	# fix genSocketOptionRegistry build error on 10.8
-	cd "$JDK_DIR/jdk"
-	patch -p1 <"$PATCH_DIR/8152545-jdk-jdk8u.patch"
+	applypatch jdk     "$PATCH_DIR/8152545-jdk-jdk8u.patch"
 	# fix concurrency crash
-	cd "$JDK_DIR/hotspot"
-	patch -p1 <"$PATCH_DIR/8181872-hotspot-jdk8u.patch"
-	patch -p1 <"$PATCH_DIR/01-8062370-hotspot-jdk8u.patch"
-	patch -p1 <"$PATCH_DIR/02-8060721-hotspot-jdk8u.patch"
-	patch -p1 <"$PATCH_DIR/8138820-hotspot-jdk8u.patch"
+	applypatch hotspot "$PATCH_DIR/8181872-hotspot-jdk8u.patch"
+	applypatch hotspot "$PATCH_DIR/01-8062370-hotspot-jdk8u.patch"
+	applypatch hotspot "$PATCH_DIR/02-8060721-hotspot-jdk8u.patch"
+	applypatch hotspot "$PATCH_DIR/8138820-hotspot-jdk8u.patch"
 }
 
 revertjdk() {
@@ -199,6 +200,8 @@ testjdk() {
 	progress "test jdk"
 	pushd "$JDK_DIR"
 	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="tier1" 
+	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="hotspot_tier1"
+	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_tier1"
 	popd
 }
 
@@ -228,7 +231,7 @@ patchjdk
 #cleanjdk
 configurejdk
 buildjdk
-#testjdk
+testjdk
 
 progress "create distribution zip"
 
