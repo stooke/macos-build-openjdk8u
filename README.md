@@ -1,6 +1,6 @@
-# Compiling jdk8u using XCode 9 or 10 
+# Compiling jdk8u using XCode 9, 10 or 11
 
-How to compile JDK 8 with the latest Xcode on macOS Mojave, High Sierra or even Catalina beta
+How to compile JDK 8 with the latest Xcode on the latest macOS.
 
 Currently (September 2019), openjdk jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
 This repo contains patches and information for setting up an environment to compile a JDK using the very latest tools.
@@ -19,7 +19,7 @@ The easiest way to get a working JDK8u is:
 ```
 
 ### Caveats:
-- This patch only works with XCode 9, 10 or 11 beta.
+- This patch only works with XCode 9, 10 or 11.
 - This patch will produce a JDK that runs on macOS 10.9 and above; the original code runs on macOS 10.7 and above.
 - The resultant JDK has not been run through TCK, but can be used to build Graal.
 
@@ -102,7 +102,3 @@ make images COMPILER_WARNINGS_FATAL=false
 ./build/maxosx-x86_64-normal-server-slowdebug/images/j2sdk-image/bin/java
 ```
 
-## TODO
-
-- Make the patch work with libstdc++
-- Make the patch work with a 'patched' XCode 10 containing libstdc++.  (i.e. copy the libstdc++ libraries and header files from an XCode 9 installation)
