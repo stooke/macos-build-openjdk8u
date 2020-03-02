@@ -78,6 +78,8 @@ TOOL_DIR="$BUILD_DIR/tools"
 TMP_DIR="$TOOL_DIR/tmp"
 popd
 
+SUBREPOS="corba hotspot jaxp jaxws jdk langtools nashorn"
+
 if $IS_DARWIN ; then
 	JDK_CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
 else
@@ -103,7 +105,7 @@ downloadjdksrc() {
 print_jdk_repo_id() {
 	pushd "$JDK_DIR"
 	progress "JDK base repo: `hg id`"
-	for a in corba hotspot jaxp jaxws jdk langtools nashorn ; do
+	for a in $SUBREPOS ; do
 		pushd $a
 		progress "JDK $a repo: `hg id`"
 		popd
@@ -117,7 +119,7 @@ applypatch() {
 	patch -p1 <$2
 }
 
-patchjdk() {
+patchjdkbuild() {
 	progress "patch jdk"
 	applypatch . "$PATCH_DIR/mac-jdk8u.patch"
 	for a in hotspot jdk ; do 
@@ -144,13 +146,29 @@ patchjdkquality() {
 	applypatch hotspot "$PATCH_DIR/metaspace-hotspot-jdk8u.patch"
 }
 
+deleteunknown() {
+	cd "$2"
+	hg status | grep ^\? | cut -c 3- | while IFS= read -r fn ; do 
+		echo deleting "$1/$fn"
+		rm "$fn"
+	done
+}
+
+deleteallunknown() {
+	deleteunknown . "$JDK_DIR"
+	for a in $SUBREPOS ; do 
+		deleteunknown $a "$JDK_DIR/$a"
+	done
+}
+
 revertjdk() {
 	cd "$JDK_DIR"
 	hg revert .
-	for a in hotspot jdk ; do 
+	for a in $SUBREPOS ; do 
 		cd "$JDK_DIR/$a"
 		hg revert .
 	done
+	deleteallunknown
 	cd "$JDK_DIR"
 	find . -name \*.rej -exec rm {} \; -print
  	find . -name \*.orig -exec rm {} \; -print
@@ -230,11 +248,11 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-downloadjdksrc
+#downloadjdksrc
 print_jdk_repo_id
-#revertjdk
+revertjdk
 patchjdkbuild
-patchjdkquality
+#patchjdkquality
 cleanjdk
 configurejdk
 buildjdk
