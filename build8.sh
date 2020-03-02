@@ -248,15 +248,15 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-#downloadjdksrc
+downloadjdksrc
 print_jdk_repo_id
 revertjdk
 patchjdkbuild
-#patchjdkquality
+patchjdkquality
 cleanjdk
 configurejdk
 buildjdk
-testjdk
+#testjdk
 
 progress "create distribution zip"
 
