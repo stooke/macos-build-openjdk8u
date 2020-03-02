@@ -3,6 +3,7 @@
 set -e
 
 BUILD_LOG="LOG=debug"
+#BUILD_MODE=normal
 
 if [ "X$BUILD_MODE" == "X" ] ; then
 	# normal, dev, shenandoah, [jvmci, jfr eventually]
@@ -110,8 +111,8 @@ print_jdk_repo_id() {
 	popd
 }
 
-patchjdk() {
-	progress "patch jdk"
+patchjdkbuild() {
+	progress "patch jdk build"
 	cd "$JDK_DIR"
 	patch -p1 <"$PATCH_DIR/mac-jdk8u.patch"
 	for a in hotspot jdk ; do 
@@ -129,12 +130,17 @@ patchjdk() {
 	# fix genSocketOptionRegistry build error on 10.8
 	cd "$JDK_DIR/jdk"
 	patch -p1 <"$PATCH_DIR/8152545-jdk-jdk8u.patch"
-	# fix concurrency crash
+}
+
+patchjdkquality() {
+	progress "patch jdk failures"
+	# fix test failures
 	cd "$JDK_DIR/hotspot"
 	patch -p1 <"$PATCH_DIR/8181872-hotspot-jdk8u.patch"
 	patch -p1 <"$PATCH_DIR/01-8062370-hotspot-jdk8u.patch"
 	patch -p1 <"$PATCH_DIR/02-8060721-hotspot-jdk8u.patch"
 	patch -p1 <"$PATCH_DIR/8138820-hotspot-jdk8u.patch"
+	#patch -p1 <"$PATCH_DIR/metaspace-hotspot-jdk8u.patch"
 }
 
 revertjdk() {
@@ -224,11 +230,12 @@ JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 downloadjdksrc
 print_jdk_repo_id
 #revertjdk
-patchjdk
-#cleanjdk
+patchjdkbuild
+patchjdkquality
+cleanjdk
 configurejdk
 buildjdk
-#testjdk
+testjdk
 
 progress "create distribution zip"
 
