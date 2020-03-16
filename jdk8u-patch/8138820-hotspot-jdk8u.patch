@@ -9,7 +9,7 @@ Reviewed-by: iveresov
 diff -r d975dfffada6 make/bsd/makefiles/gcc.make
 --- a/make/bsd/makefiles/gcc.make	Tue Feb 04 02:11:25 2020 +0000
 +++ b/make/bsd/makefiles/gcc.make	Thu Feb 13 09:47:43 2020 -0500
-@@ -314,10 +314,10 @@
+@@ -313,10 +313,10 @@
  
  # Work around some compiler bugs.
  ifeq ($(USE_CLANG), true)

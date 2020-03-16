@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+#set -x
 
 BUILD_LOG="LOG=debug"
 #BUILD_MODE=normal
@@ -22,7 +23,7 @@ fi
 
 ## add javafx to build at end
 if [ "X$BUILD_JAVAFX" == "X" ] ; then
-	BUILD_JAVAFX=true
+	BUILD_JAVAFX=false
 fi
 BUILD_SCENEBUILDER=$BUILD_JAVAFX
 
@@ -138,12 +139,18 @@ patchjdkbuild() {
 
 patchjdkquality() {
 	progress "patch jdk failures"
-	# fix concurrency crash
-	applypatch hotspot "$PATCH_DIR/8181872-hotspot-jdk8u.patch"
+	# fix concurrency crash; this patch is now in the JDK
+	#  applypatch hotspot "$PATCH_DIR/8181872-hotspot-jdk8u.patch"
+	# these patches mitigate a clang issue by avoding intrinsic strncat()
 	applypatch hotspot "$PATCH_DIR/01-8062370-hotspot-jdk8u.patch"
 	applypatch hotspot "$PATCH_DIR/02-8060721-hotspot-jdk8u.patch"
+	# disable optimization on some files when using clang 
+	# (should check if this is still tha case on newer clang)
 	applypatch hotspot "$PATCH_DIR/8138820-hotspot-jdk8u.patch"
-	applypatch hotspot "$PATCH_DIR/metaspace-hotspot-jdk8u.patch"
+	# this is 8062370 and 8060721 together, so it won't apply if those have been applied
+	#   applypatch hotspot "$PATCH_DIR/metaspace-hotspot-jdk8u.patch"
+	# this patch is incomplete in 8u; it doesn't properly access some test support classes:
+	#   applypatch jdk "$PATCH_DIR/8210403-jdk-jdk8u.patch"
 }
 
 deleteunknown() {
@@ -223,6 +230,7 @@ buildjdk() {
 testjdk() {
 	progress "test jdk"
 	pushd "$JDK_DIR"
+	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_util" 
 	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="tier1" 
 	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="hotspot_tier1"
 	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_tier1"
@@ -249,14 +257,15 @@ fi
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
 downloadjdksrc
-print_jdk_repo_id
+#print_jdk_repo_id
+cleanjdk
 revertjdk
+
 patchjdkbuild
 patchjdkquality
-cleanjdk
 configurejdk
 buildjdk
-#testjdk
+testjdk
 
 progress "create distribution zip"
 

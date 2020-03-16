@@ -1,7 +1,7 @@
 diff --git a/make/bsd/makefiles/gcc.make b/make/bsd/makefiles/gcc.make
 --- a/make/bsd/makefiles/gcc.make
 +++ b/make/bsd/makefiles/gcc.make
-@@ -363,7 +363,15 @@
+@@ -362,7 +362,15 @@
  # Linker flags
  
  # statically link libstdc++.so, work with gcc but ignored by g++
