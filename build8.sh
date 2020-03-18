@@ -122,35 +122,50 @@ applypatch() {
 
 patchjdkbuild() {
 	progress "patch jdk"
-	applypatch . "$PATCH_DIR/mac-jdk8u.patch"
-	for a in hotspot jdk ; do 
-		for b in "$PATCH_DIR/mac-jdk8u-$a*.patch" ; do 
-			applypatch $a "$b"
-		done
-	done
-	for a in hotspot ; do 
-		for b in "$PATCH_DIR/linux-jdk8u-$a*.patch" ; do 
-			applypatch $a "$b"
-		done
-	done
-	# fix genSocketOptionRegistry build error on 10.8
-	applypatch jdk     "$PATCH_DIR/8152545-jdk-jdk8u.patch"
+	# JDK-8019470: Changes needed to compile JDK 8 on MacOS with clang compiler
+	applypatch . "$PATCH_DIR/jdk8u-8019470.patch"
+	# fix some help messages and Xcode version checks
+	applypatch . "$PATCH_DIR/jdk8u-buildfix1.patch"
+	# use correct C++ standard library
+	#applypatch . "$PATCH_DIR/jdk8u-libcxxfix.patch"
+	# misc clang-specific cleanup
+	applypatch . "$PATCH_DIR/jdk8u-buildfix2.patch"
+
+	# misc clang-specific cleanup; doesn't apply cleanly on top of 8019470 
+	# (use -g1 for fastdebug builds)
+	#applypatch . "$PATCH_DIR/jdk8u-buildfix2a.patch"
+
+	# JDK-8152545: Use preprocessor instead of compiling a program to generate native nio constants
+	# (fixes genSocketOptionRegistry build error on 10.8)
+	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-8152545.patch"
+
+	# fix for clang crash if base has non-virtual destructor
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-virtualfix.patch"
+
+	# fix WARNINGS_ARE_ERRORS handling
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-fatalwarningfix.patch"
+	
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-mac.patch"
+
+	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-staticfix.patch"
+
+	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
 }
 
 patchjdkquality() {
 	progress "patch jdk failures"
 	# fix concurrency crash; this patch is now in the JDK
-	#  applypatch hotspot "$PATCH_DIR/8181872-hotspot-jdk8u.patch"
+	#  applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8181872.patch"
 	# these patches mitigate a clang issue by avoding intrinsic strncat()
-	applypatch hotspot "$PATCH_DIR/01-8062370-hotspot-jdk8u.patch"
-	applypatch hotspot "$PATCH_DIR/02-8060721-hotspot-jdk8u.patch"
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-01-8062370.patch"
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-02-8060721.patch"
 	# disable optimization on some files when using clang 
 	# (should check if this is still tha case on newer clang)
-	applypatch hotspot "$PATCH_DIR/8138820-hotspot-jdk8u.patch"
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8138820.patch"
 	# this is 8062370 and 8060721 together, so it won't apply if those have been applied
-	#   applypatch hotspot "$PATCH_DIR/metaspace-hotspot-jdk8u.patch"
+	#   applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-metaspace.patch"
 	# this patch is incomplete in 8u; it doesn't properly access some test support classes:
-	#   applypatch jdk "$PATCH_DIR/8210403-jdk-jdk8u.patch"
+	#   applypatch jdk "$PATCH_DIR/jdk8u-jdk-8210403.patch"
 }
 
 deleteunknown() {
@@ -256,11 +271,10 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-downloadjdksrc
+#downloadjdksrc
 #print_jdk_repo_id
 cleanjdk
 revertjdk
-
 patchjdkbuild
 patchjdkquality
 configurejdk

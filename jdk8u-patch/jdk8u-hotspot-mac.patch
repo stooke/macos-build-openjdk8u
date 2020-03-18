@@ -1,0 +1,37 @@
+diff --git a/make/bsd/makefiles/gcc.make b/make/bsd/makefiles/gcc.make
+--- a/make/bsd/makefiles/gcc.make
++++ b/make/bsd/makefiles/gcc.make
+@@ -362,7 +362,15 @@
+ # Linker flags
+ 
+ # statically link libstdc++.so, work with gcc but ignored by g++
+-STATIC_STDCXX = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
++ifeq ($(OS_VENDOR), Darwin)
++  ifeq ($(USE_CLANG), true)
++    STATIC_STDCXX = -Wl,-Bstatic -lc++ -Wl,-Bdynamic
++  else
++    STATIC_STDCXX = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
++  endif
++else
++  STATIC_STDCXX = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
++endif
+ 
+ ifeq ($(USE_CLANG),)
+   # statically link libgcc and/or libgcc_s, libgcc does not exist before gcc-3.x.
+diff --git a/make/bsd/makefiles/jsig.make b/make/bsd/makefiles/jsig.make
+--- a/make/bsd/makefiles/jsig.make
++++ b/make/bsd/makefiles/jsig.make
+@@ -54,6 +54,11 @@
+ 
+ LFLAGS_JSIG += -D_GNU_SOURCE -pthread $(LDFLAGS_HASH_STYLE) $(EXTRA_LDFLAGS)
+ 
++ifeq ($(OS_VENDOR), Darwin)
++# bring in minimum version argument or we'll fail on OSX 10.10
++LFLAGS_JSIG += $(LFLAGS)
++endif
++
+ # DEBUG_BINARIES overrides everything, use full -g debug information
+ ifeq ($(DEBUG_BINARIES), true)
+   JSIG_DEBUG_CFLAGS = -g
+ 
+ 

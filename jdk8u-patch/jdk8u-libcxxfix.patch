@@ -1,0 +1,36 @@
+
+--- old/common/autoconf/generated-configure.sh	2019-06-27 16:38:53.000000000 -0400
++++ new/common/autoconf/generated-configure.sh	2019-06-27 16:38:52.000000000 -0400
+@@ -48892,8 +48984,12 @@
+   fi
+ 
+   # TODO better (platform agnostic) test
+-  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x && test "x$TOOLCHAIN_TYPE" = xgcc; then
+-    LIBCXX="-lstdc++"
++  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x ; then
++    if test "x$TOOLCHAIN_TYPE" = xgcc; then
++      LIBCXX="-lstdc++"
++    elif test "x$TOOLCHAIN_TYPE" = xclang; then
++      LIBCXX="-std=libc++"
++    fi
+   fi
+ 
+ 
+--- old/common/autoconf/libraries.m4	2019-06-27 16:38:58.000000000 -0400
++++ new/common/autoconf/libraries.m4	2019-06-27 16:38:58.000000000 -0400
+@@ -1047,8 +1047,12 @@
+   fi
+ 
+   # TODO better (platform agnostic) test
+-  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x && test "x$TOOLCHAIN_TYPE" = xgcc; then
+-    LIBCXX="-lstdc++"
++  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x ; then 
++    if test "x$TOOLCHAIN_TYPE" = xgcc; then
++      LIBCXX="-lstdc++"
++    elif test "x$TOOLCHAIN_TYPE" = xclang; then
++      LIBCXX="-std=libc++"
++    fi
+   fi
+ 
+   AC_SUBST(LIBCXX)
+

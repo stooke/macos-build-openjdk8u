@@ -1,0 +1,121 @@
+
+--- old/common/autoconf/flags.m4	2019-06-27 16:38:51.000000000 -0400
++++ new/common/autoconf/flags.m4	2019-06-27 16:38:51.000000000 -0400
+@@ -680,6 +737,22 @@
+       # command line.
+       CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+       LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
++    elif test "x$TOOLCHAIN_TYPE" = xclang; then
++      # FIXME: This needs to be exported in spec.gmk due to closed legacy code.
++      # FIXME: clean this up, and/or move it elsewhere.
++
++      # Setting these parameters makes it an error to link to macosx APIs that are
++      # newer than the given OS version and makes the linked binaries compatible 
++      # even if built on a newer version of the OS.
++      # The expected format is X.Y.Z
++      MACOSX_VERSION_MIN=10.9.0
++      AC_SUBST(MACOSX_VERSION_MIN)
++    
++      # The macro takes the version with no dots, ex: 1070
++      # Let the flags variables get resolved in make for easier override on make
++      # command line.
++      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
++      LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+     fi
+   fi
+ 
+@@ -748,6 +821,23 @@
+           LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
+         fi
+       fi
++    elif test "x$TOOLCHAIN_TYPE" = xclang; then
++      # If this is a --hash-style=gnu system, use --hash-style=both, why?
++      # We have previously set HAS_GNU_HASH if this is the case
++      if test -n "$HAS_GNU_HASH"; then
++        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker --hash-style=both "
++      fi
++      if test "x$OPENJDK_TARGET_OS" = xlinux; then
++        # And since we now know that the linker is gnu, then add:
++        #   -z defs, to forbid undefined symbols in object files
++        #   -z noexecstack, to mark stack regions as non-executable
++        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -z -Xlinker defs -Xlinker -z -Xlinker noexecstack"
++        if test "x$DEBUG_LEVEL" = "xrelease"; then
++          # When building release libraries, tell the linker optimize them.
++          # Should this be supplied to the OSS linker as well?
++          LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
++        fi
++      fi
+     fi
+ 
+     if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
+--- old/common/autoconf/generated-configure.sh	2019-06-27 16:38:53.000000000 -0400
++++ new/common/autoconf/generated-configure.sh	2019-06-27 16:38:52.000000000 -0400
+@@ -14009,6 +14009,8 @@
+     elif test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
+       OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -DLIBARCH32NAME='\"i386\"' -DLIBARCH64NAME='\"amd64\"'"
+     fi
++  elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then
++    OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+   fi
+ 
+
+@@ -42173,6 +42231,22 @@
+       # command line.
+       CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+       LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
++    elif test "x$TOOLCHAIN_TYPE" = xclang; then
++      # FIXME: This needs to be exported in spec.gmk due to closed legacy code.
++      # FIXME: clean this up, and/or move it elsewhere.
++
++      # Setting these parameters makes it an error to link to macosx APIs that are
++      # newer than the given OS version and makes the linked binaries compatible
++      # even if built on a newer version of the OS.
++      # The expected format is X.Y.Z
++      MACOSX_VERSION_MIN=10.9.0
++
++
++      # The macro takes the version with no dots, ex: 1070
++      # Let the flags variables get resolved in make for easier override on make
++      # command line.
++      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
++      LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+     fi
+   fi
+ 
+@@ -42241,6 +42316,23 @@
+           LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
+         fi
+       fi
++    elif test "x$TOOLCHAIN_TYPE" = xclang; then
++      # If this is a --hash-style=gnu system, use --hash-style=both, why?
++      # We have previously set HAS_GNU_HASH if this is the case
++      if test -n "$HAS_GNU_HASH"; then
++        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker --hash-style=both "
++      fi
++      if test "x$OPENJDK_TARGET_OS" = xlinux; then
++        # And since we now know that the linker is gnu, then add:
++        #   -z defs, to forbid undefined symbols in object files
++        #   -z noexecstack, to mark stack regions as non-executable
++        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -z -Xlinker defs -Xlinker -z -Xlinker noexecstack"
++        if test "x$DEBUG_LEVEL" = "xrelease"; then
++          # When building release libraries, tell the linker optimize them.
++          # Should this be supplied to the OSS linker as well?
++          LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
++        fi
++      fi
+     fi
+ 
+     if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
+
+--- old/common/autoconf/platform.m4	2019-06-27 16:39:00.000000000 -0400
++++ new/common/autoconf/platform.m4	2019-06-27 16:39:00.000000000 -0400
+@@ -334,6 +334,8 @@
+     elif test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
+       OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -DLIBARCH32NAME='\"i386\"' -DLIBARCH64NAME='\"amd64\"'"
+     fi
++  elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then
++    OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+   fi
+   AC_SUBST(OPENJDK_TARGET_CPU_JLI_CFLAGS)
+ 
+

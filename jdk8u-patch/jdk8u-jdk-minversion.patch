@@ -26,14 +26,3 @@
        OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libjli_static, \
        DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
  
---- old/src/macosx/native/sun/osxapp/ThreadUtilities.m	2019-06-27 16:39:14.000000000 -0400
-+++ new/src/macosx/native/sun/osxapp/ThreadUtilities.m	2019-06-27 16:39:14.000000000 -0400
-@@ -36,7 +36,7 @@
- static jobject appkitThreadGroup = NULL;
- static BOOL awtEmbedded = NO;
- 
--inline void attachCurrentThread(void** env) {
-+static inline void attachCurrentThread(void** env) {
-     if ([NSThread isMainThread]) {
-         JavaVMAttachArgs args;
-         args.version = JNI_VERSION_1_4;

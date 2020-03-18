@@ -2,7 +2,7 @@
 
 set -e
 
-jdk=jdk8u
+jdk=jdk8u-dev
 
 BUILD_DIR=`pwd`
 REPO_DIR="$BUILD_DIR/$jdk"
@@ -84,5 +84,5 @@ revert() {
 #cd "$REPO_DIR/jdk"
 #hg import -f --no-commit "$BUILD_DIR/8181872-jdk8.patch"
 
-mkrevs 8181872-jdk8u 00
+mkrevs 8019470-jdk8u 00
 
