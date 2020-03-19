@@ -124,6 +124,14 @@ patchjdkbuild() {
 	progress "patch jdk"
 	# JDK-8019470: Changes needed to compile JDK 8 on MacOS with clang compiler
 	applypatch . "$PATCH_DIR/jdk8u-8019470.patch"
+
+	# JDK-8152545: Use preprocessor instead of compiling a program to generate native nio constants
+	# (fixes genSocketOptionRegistry build error on 10.8)
+	applypatch jdk "$PATCH_DIR/jdk8u-jdk-8152545.patch"
+
+	# fix WARNINGS_ARE_ERRORS handling
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8241285.patch"
+
 	# fix some help messages and Xcode version checks
 	applypatch . "$PATCH_DIR/jdk8u-buildfix1.patch"
 	# use correct C++ standard library
@@ -135,15 +143,8 @@ patchjdkbuild() {
 	# (use -g1 for fastdebug builds)
 	#applypatch . "$PATCH_DIR/jdk8u-buildfix2a.patch"
 
-	# JDK-8152545: Use preprocessor instead of compiling a program to generate native nio constants
-	# (fixes genSocketOptionRegistry build error on 10.8)
-	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-8152545.patch"
-
 	# fix for clang crash if base has non-virtual destructor
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-virtualfix.patch"
-
-	# fix WARNINGS_ARE_ERRORS handling
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-fatalwarningfix.patch"
 	
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-mac.patch"
 
@@ -162,10 +163,16 @@ patchjdkquality() {
 	# disable optimization on some files when using clang 
 	# (should check if this is still tha case on newer clang)
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8138820.patch"
+
 	# this is 8062370 and 8060721 together, so it won't apply if those have been applied
 	#   applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-metaspace.patch"
+
 	# this patch is incomplete in 8u; it doesn't properly access some test support classes:
 	#   applypatch jdk "$PATCH_DIR/jdk8u-jdk-8210403.patch"
+
+	# 8144125: [macOS] java/awt/event/ComponentEvent/MovedResizedTwiceTest/MovedResizedTwiceTest.java failed automatically
+	# (rejected as it doen't seem to apply to 8u without lots more work; the test fails either way)
+	#   applypatch jdk "$PATCH_DIR/jdk8u-jdk-8144125.patch"
 }
 
 deleteunknown() {
@@ -242,11 +249,22 @@ buildjdk() {
 	popd
 }
 
+dojtreg() {
+	REPO=$1
+	shift
+	TESTS=$*
+	JDK_HOME="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
+	JT_WORK="$BUILD_DIR/jtreg"
+	pushd "$JDK_DIR/$REPO"
+	jtreg -w "$JT_WORK/work" -r "$JT_WORK/report" -jdk:$JDK_HOME $TESTS
+	popd
+}
+
 testjdk() {
 	progress "test jdk"
 	pushd "$JDK_DIR"
 	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_util" 
-	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="tier1" 
+	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_awt" 
 	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="hotspot_tier1"
 	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_tier1"
 	popd
@@ -276,15 +294,18 @@ JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 cleanjdk
 revertjdk
 patchjdkbuild
-patchjdkquality
+#patchjdkquality
 configurejdk
 buildjdk
+#dojtreg jdk test/java/awt/event/ComponentEvent/MovedResizedTwiceTest
 testjdk
 
 progress "create distribution zip"
 
 if $BUILD_JAVAFX ; then
 	WITH_JAVAFX_STR=-javafx
+else
+	WITH_JAVAFX_STR=
 fi
 
 ZIP_NAME="$BUILD_DIR/jdk8u$BUILD_MODE$WITH_JAVAFX_STR.zip"
