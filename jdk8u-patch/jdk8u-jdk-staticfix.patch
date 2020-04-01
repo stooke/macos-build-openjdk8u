@@ -1,5 +1,15 @@
---- old/src/macosx/native/sun/osxapp/ThreadUtilities.m	2019-06-27 16:39:14.000000000 -0400
-+++ new/src/macosx/native/sun/osxapp/ThreadUtilities.m	2019-06-27 16:39:14.000000000 -0400
+
+# HG changeset patch
+# User pchelko
+# Date 1400759210 -14400
+# Node ID 06f6160721da232bd33b12e2c953c4070eec90ba
+# Parent  823387e2bf427b74cead3a26a5eda3e431cec545
+8043646: libosxapp.dylib fails to build on Mac OS 10.9 with clang
+Reviewed-by: anthony, serb
+
+diff -r 823387e2bf42 -r 06f6160721da src/macosx/native/sun/osxapp/ThreadUtilities.m
+--- a/src/macosx/native/sun/osxapp/ThreadUtilities.m	Wed May 21 11:12:18 2014 -0700
++++ b/src/macosx/native/sun/osxapp/ThreadUtilities.m	Thu May 22 15:46:50 2014 +0400
 @@ -36,7 +36,7 @@
  static jobject appkitThreadGroup = NULL;
  static BOOL awtEmbedded = NO;
