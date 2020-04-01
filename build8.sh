@@ -148,7 +148,8 @@ patchjdkbuild() {
 	
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-mac.patch"
 
-	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-staticfix.patch"
+	# libosxapp.dylib fails to build on Mac OS 10.9 with clang
+	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-8043646.patch"
 
 	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
 }
