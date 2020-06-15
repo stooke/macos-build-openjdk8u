@@ -144,7 +144,7 @@ patchjdkbuild() {
 	#applypatch . "$PATCH_DIR/jdk8u-buildfix2a.patch"
 
 	# fix for clang crash if base has non-virtual destructor
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-virtualfix.patch"
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8244878.patch"
 	
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-mac.patch"
 
