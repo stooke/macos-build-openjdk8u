@@ -185,7 +185,7 @@ build_bootstrap_jdk8() {
 		if test -d "$TOOL_DIR/jdk8u" ; then
 			return
 		fi
-		download_and_open https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u202b08.tar.gz "$TOOL_DIR/jdk8u"
+		download_and_open  https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u265-b01/OpenJDK8U-jdk_x64_mac_hotspot_8u265b01.tar.gz "$TOOL_DIR/jdk8u"
 	fi
 }
 

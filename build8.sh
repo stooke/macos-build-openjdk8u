@@ -4,7 +4,7 @@ set -e
 #set -x
 
 BUILD_LOG="LOG=debug"
-#BUILD_MODE=normal
+BUILD_MODE=normal
 
 if [ "X$BUILD_MODE" == "X" ] ; then
 	# normal, dev, shenandoah, [jvmci, jfr eventually]
@@ -127,7 +127,7 @@ patchjdkbuild() {
 
 	# JDK-8152545: Use preprocessor instead of compiling a program to generate native nio constants
 	# (fixes genSocketOptionRegistry build error on 10.8)
-	applypatch jdk "$PATCH_DIR/jdk8u-jdk-8152545.patch"
+#	applypatch jdk "$PATCH_DIR/jdk8u-jdk-8152545.patch"
 
 	# fix WARNINGS_ARE_ERRORS handling
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8241285.patch"
@@ -291,8 +291,8 @@ fi
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
 #downloadjdksrc
-#print_jdk_repo_id
-cleanjdk
+print_jdk_repo_id
+#cleanjdk
 revertjdk
 patchjdkbuild
 #patchjdkquality
