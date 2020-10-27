@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # usage: . ./tools.sh tooldir [tool]...
+OLDPATH="$PATH"
 
 set_os() {
 	IS_LINUX=false
@@ -151,12 +152,14 @@ build_freetype() {
 	pushd "$TOOL_DIR/freetype"
 	./configure
 	make
+    if $IS_DARWIN ; then
 set -x
 	cd objs/.libs
 	otool -L libfreetype.6.dylib
 	install_name_tool -change /usr/local/lib/libfreetype.6.dylib @rpath/libfreetype.6.dylib libfreetype.6.dylib
 	otool -L libfreetype.6.dylib
 set +x
+    fi
 	popd
 }
 

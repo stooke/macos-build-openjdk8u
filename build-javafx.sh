@@ -6,6 +6,11 @@ export JAVA_HOME="$BUILD_JDK_HOME"
 
 ### no need to change anything below this line unless something went wrong
 
+# fedora: may need to sudo dnf install gtk2-devel gtk3-devel
+# TODO: use jdk.jfr instead of jrockit package
+# TODO: glibc no longer privides xlocale.h, so glib-lite won't build
+# (this last one means this script doesn't work at the moment)
+
 set -e
 
 # define build environment
@@ -25,6 +30,21 @@ JAVAFX_BUILD_DIR="$BUILD_DIR/jfx8"
 
 # where this build wil put a new JDK with javaFX
 NEW_JDK_DIR="$TMP_DIR/jdk8ujfx"
+
+set_os() {
+        IS_LINUX=false
+        IS_DARWIN=false
+        if [ "`uname`" = "Linux" ] ; then
+                IS_LINUX=true
+        fi
+        IS_DARWIN=false
+        if [ "`uname`" = "Darwin" ] ; then
+                IS_DARWIN=true
+        fi
+}
+
+set_os
+
 
 clone_javafx() {
   if [ ! -d $JAVAFX_BUILD_DIR ] ; then
@@ -58,7 +78,8 @@ build_javafx() {
     progress "build javafx"
     cd "$JAVAFX_BUILD_DIR"
     #./gradlew sdk
-    ./gradlew -PCOMPILE_WEBKIT=true -PCOMPILE_MEDIA=true sdk
+    # JDK 8 now includes jfr, but javafx 8 refers to jrockit so won't build
+    ./gradlew --stacktrace -PCOMPILE_JFR=false -PCOMPILE_WEBKIT=true -PCOMPILE_MEDIA=true sdk
 }
 
 build_javafx_demos() {
@@ -117,16 +138,26 @@ progress() {
 
 progress "download tools"
 
-. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" autoconf mercurial webrev jtreg ant cmake mvn
+if $IS_DARWIN ; then
+    . "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" autoconf mercurial webrev jtreg ant cmake mvn
+fi
+
+if $IS_LINUX ; then
+    # build machine will require system autoconf mercurial ant cmake mvn
+    . "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" webrev jtreg
+fi
 
 progress "first attempt to build javafx"
+
+set -x
+
 
 if true ; then
 save_jdk "$BUILD_JDK_HOME" "$NEW_JDK_DIR"
 clone_javafx
 revert_javafx
 patch_javafx "$PATCH_DIR/javafx8-pass1.patch"
-#clean_javafx
+clean_javafx
 build_javafx
 #test_javafx
 #build_javafx_demos

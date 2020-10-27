@@ -1,14 +1,16 @@
 #!/bin/bash
 
 set -e
-#set -x
 
 BUILD_LOG="LOG=debug"
 BUILD_MODE=normal
+TEST_JDK=false
+BUILD_JAVAFX=false
+
 
 if [ "X$BUILD_MODE" == "X" ] ; then
 	# normal, dev, shenandoah, [jvmci, jfr eventually]
-	BUILD_MODE=dev
+	BUILD_MODE=normal
 fi
 
 ## release, fastdebug, slowdebug
@@ -31,6 +33,7 @@ BUILD_SCENEBUILDER=$BUILD_JAVAFX
 
 set_os() {
 	IS_LINUX=false
+	IS_DARWIN=false
 	if [ "`uname`" = "Linux" ] ; then
 		IS_LINUX=true
 	fi
@@ -64,11 +67,6 @@ elif [ "$BUILD_MODE" == "jvmci" ] ; then
 	BUILD_MODE=dev
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
 	JDK_DIR="$BUILD_DIR/$JDK_BASE-jvmci"
-elif [ "$BUILD_MODE" == "jfr" ] ; then
-	JDK_BASE=jdk8u-jfr-incubator
-	BUILD_MODE=dev
-	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
-	JDK_DIR="$BUILD_DIR/$JDK_BASE"
 fi
 
 # define build environment
@@ -120,7 +118,17 @@ applypatch() {
 	patch -p1 <$2
 }
 
-patchjdkbuild() {
+patch_linux_jdkbuild() {
+	progress "patch jdk"
+        # fix WARNINGS_ARE_ERRORS handling
+        applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8241285.patch"
+}
+
+patch_linux_jdkquality() {
+	progress "patch test failures (no patches available at this time)"
+}
+
+patch_macos_jdkbuild() {
 	progress "patch jdk"
 	# JDK-8019470: Changes needed to compile JDK 8 on MacOS with clang compiler
 	applypatch . "$PATCH_DIR/jdk8u-8019470.patch"
@@ -154,8 +162,8 @@ patchjdkbuild() {
 	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
 }
 
-patchjdkquality() {
-	progress "patch jdk failures"
+patch_macos_jdkquality() {
+	progress "patch jdk test failures"
 	# fix concurrency crash; this patch is now in the JDK
 	#  applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8181872.patch"
 	# these patches mitigate a clang issue by avoding intrinsic strncat()
@@ -174,6 +182,18 @@ patchjdkquality() {
 	# 8144125: [macOS] java/awt/event/ComponentEvent/MovedResizedTwiceTest/MovedResizedTwiceTest.java failed automatically
 	# (rejected as it doen't seem to apply to 8u without lots more work; the test fails either way)
 	#   applypatch jdk "$PATCH_DIR/jdk8u-jdk-8144125.patch"
+}
+
+patch_jdk() {
+    if $IS_LINUX ; then
+        patch_linux_jdkbuild
+        patch_linux_jdkquality
+    fi
+
+    if $IS_DARWIN ; then
+        patch_macos_jdkbuild
+        patch_macos_jdkquality
+    fi
 }
 
 deleteunknown() {
@@ -226,10 +246,13 @@ configurejdk() {
             --includedir="$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include" \
             --with-boot-jdk="$BOOT_JDK""
 	fi
-	xxBUILD_VERSION_CONFIG="--with-build-number=b88 \
+    if $BUILD_JAVAFX ; then
+        # the javafx build requires 1.8.0-b40 or higher
+	BUILD_VERSION_CONFIG="--with-build-number=b88 \
             --with-vendor-name="pizza" \
             --with-milestone="foo" \
             --with-update-version=99"
+    fi
 	./configure $DARWIN_CONFIG $BUILD_VERSION_CONFIG \
             --with-debug-level=$DEBUG_LEVEL \
             --with-conf-name=$JDK_CONF \
@@ -257,7 +280,9 @@ dojtreg() {
 	JDK_HOME="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 	JT_WORK="$BUILD_DIR/jtreg"
 	pushd "$JDK_DIR/$REPO"
+	set +e
 	jtreg -w "$JT_WORK/work" -r "$JT_WORK/report" -jdk:$JDK_HOME $TESTS
+	set -e
 	popd
 }
 
@@ -290,16 +315,19 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-#downloadjdksrc
+downloadjdksrc
 print_jdk_repo_id
-#cleanjdk
+cleanjdk
 revertjdk
-patchjdkbuild
-#patchjdkquality
+patchjdk
 configurejdk
 buildjdk
-#dojtreg jdk test/java/awt/event/ComponentEvent/MovedResizedTwiceTest
-testjdk
+
+if $TEST_JDK ; then
+    #dojtreg jdk test/java/awt/event/ComponentEvent/MovedResizedTwiceTest
+    #dojtreg jdk test/java/awt/image/Raster/TestChildRasterOp.java test/java/awt/event/KeyEvent/SwallowKeyEvents test/java/awt/event/KeyEvent/KeyChar/KeyCharTest.java
+    testjdk
+fi
 
 progress "create distribution zip"
 
