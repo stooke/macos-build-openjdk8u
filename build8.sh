@@ -167,8 +167,10 @@ patch_macos_jdkquality() {
 	# fix concurrency crash; this patch is now in the JDK
 	#  applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8181872.patch"
 	# these patches mitigate a clang issue by avoding intrinsic strncat()
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-01-8062370.patch"
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-02-8060721.patch"
+
+	###### already in upstream jdk
+	###### applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-01-8062370.patch"
+	###### applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-02-8060721.patch"
 	# disable optimization on some files when using clang 
 	# (should check if this is still tha case on newer clang)
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8138820.patch"
@@ -319,7 +321,7 @@ downloadjdksrc
 print_jdk_repo_id
 cleanjdk
 revertjdk
-patchjdk
+patch_jdk
 configurejdk
 buildjdk
 
