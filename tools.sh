@@ -105,8 +105,11 @@ build_automake() {
 	fi
 	download_and_open http://ftp.gnu.org/gnu/automake/automake-1.16.tar.gz "$TOOL_DIR/automake"
 	pushd "$TOOL_DIR/automake"
+	OLDPATH="$PATH"
+	PATH="$TOOL_INSTALL_ROOT/bin:$PATH"
 	./configure --prefix=$TOOL_INSTALL_ROOT
 	make install
+	PATH="$OLDPATH"
 	popd
 }
 

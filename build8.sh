@@ -5,11 +5,11 @@ set -e
 BUILD_LOG="LOG=debug"
 BUILD_MODE=normal
 TEST_JDK=false
-BUILD_JAVAFX=false
+BUILD_JAVAFX=true
 
 
 if [ "X$BUILD_MODE" == "X" ] ; then
-	# normal, dev, shenandoah, [jvmci, jfr eventually]
+	# normal, dev, shenandoah, [jvmci, eventually]
 	BUILD_MODE=normal
 fi
 
@@ -192,7 +192,7 @@ patch_jdk() {
 
     if $IS_DARWIN ; then
         patch_macos_jdkbuild
-        patch_macos_jdkquality
+#        patch_macos_jdkquality
     fi
 }
 
@@ -315,12 +315,11 @@ fi
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-downloadjdksrc
+#downloadjdksrc
 print_jdk_repo_id
-#cleanjdk
-#revertjdk
-patchjdkbuild
-#patchjdkquality
+cleanjdk
+revertjdk
+patchjdk
 configurejdk
 buildjdk
 
