@@ -317,9 +317,10 @@ JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
 downloadjdksrc
 print_jdk_repo_id
-cleanjdk
-revertjdk
-patchjdk
+#cleanjdk
+#revertjdk
+patchjdkbuild
+#patchjdkquality
 configurejdk
 buildjdk
 
