@@ -5,7 +5,7 @@ set -e
 BUILD_LOG="LOG=debug"
 BUILD_MODE=dev
 TEST_JDK=false
-BUILD_JAVAFX=true
+BUILD_JAVAFX=false
 
 
 if [ "X$BUILD_MODE" == "X" ] ; then
@@ -133,10 +133,6 @@ patch_macos_jdkbuild() {
 	# JDK-8019470: Changes needed to compile JDK 8 on MacOS with clang compiler
 	applypatch . "$PATCH_DIR/jdk8u-8019470.patch"
 
-	# JDK-8152545: Use preprocessor instead of compiling a program to generate native nio constants
-	# (fixes genSocketOptionRegistry build error on 10.8)
-#	applypatch jdk "$PATCH_DIR/jdk8u-jdk-8152545.patch"
-
 	# fix WARNINGS_ARE_ERRORS handling
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8241285.patch"
 
@@ -161,8 +157,8 @@ patch_macos_jdkbuild() {
 
 	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
 
-	# VrifyFixClassname appears in no header files
-	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-verifyfixclassname.patch"
+	# VerifyFixClassname appears in no header files
+	#applypatch jdk     "$PATCH_DIR/jdk8u-jdk-verifyfixclassname.patch"
 }
 
 patch_macos_jdkquality() {
@@ -252,13 +248,14 @@ configurejdk() {
     if $BUILD_JAVAFX ; then
         # the javafx build requires 1.8.0-b40 or higher
 	BUILD_VERSION_CONFIG="--with-build-number=b88 \
-            --with-vendor-name="pizza" \
-            --with-milestone="foo" \
+            --with-vendor-name="openjdk" \
+            --with-milestone="ea" \
             --with-update-version=99"
     fi
 	./configure $DARWIN_CONFIG $BUILD_VERSION_CONFIG \
             --with-debug-level=$DEBUG_LEVEL \
             --with-conf-name=$JDK_CONF \
+			--with-native-debug-symbols=external \
             --with-jtreg="$BUILD_DIR/tools/jtreg" \
             --with-freetype-include="$TOOL_DIR/freetype/include" \
             --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs $DISABLE_PCH
