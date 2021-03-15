@@ -34,7 +34,7 @@ Reviewed-by: erikj, ihse
 +    fi
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      PICFLAG="-KPIC"
-     C_FLAG_REORDER='-xF'
+     PIEFLAG=""
 @@ -272,6 +288,8 @@
    # Generate make dependency files
    if test "x$TOOLCHAIN_TYPE" = xgcc; then
@@ -77,7 +77,7 @@ Reviewed-by: erikj, ihse
        C_O_FLAG_HI="-O3 -qstrict"
 --- old/common/autoconf/generated-configure.sh	2020-03-17 16:51:34.000000000 -0400
 +++ new/common/autoconf/generated-configure.sh	2020-03-17 16:51:34.000000000 -0400
-@@ -25368,8 +25358,28 @@
+@@ -25365,8 +25355,28 @@
    # Use indirect variable referencing
    toolchain_var_name=VALID_TOOLCHAINS_$OPENJDK_BUILD_OS
    VALID_TOOLCHAINS=${!toolchain_var_name}
@@ -108,7 +108,7 @@ Reviewed-by: erikj, ihse
  
    if test "x$with_toolchain_type" = xlist; then
      # List all toolchains
-@@ -41308,6 +41317,26 @@
+@@ -41305,6 +41314,26 @@
        SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
        SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
      fi
@@ -134,8 +134,8 @@ Reviewed-by: erikj, ihse
 +    fi
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      PICFLAG="-KPIC"
-     C_FLAG_REORDER='-xF'
-@@ -41372,6 +41398,8 @@
+     PIEFLAG=""
+@@ -41369,6 +41395,8 @@
    # Generate make dependency files
    if test "x$TOOLCHAIN_TYPE" = xgcc; then
      C_FLAG_DEPS="-MMD -MF"
@@ -144,7 +144,7 @@ Reviewed-by: erikj, ihse
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      C_FLAG_DEPS="-xMMD -xMF"
    elif test "x$TOOLCHAIN_TYPE" = xxlc; then
-@@ -41396,6 +41424,9 @@
+@@ -41393,6 +41421,9 @@
        CXXFLAGS_DEBUG_SYMBOLS="-g"
      fi
      ASFLAGS_DEBUG_SYMBOLS="-g"
@@ -154,7 +154,7 @@ Reviewed-by: erikj, ihse
    elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
      CFLAGS_DEBUG_SYMBOLS="-g -xs"
      CXXFLAGS_DEBUG_SYMBOLS="-g0 -xs"
-@@ -41452,6 +41483,20 @@
+@@ -41449,6 +41480,20 @@
          C_O_FLAG_NORM="-O2"
          C_O_FLAG_NONE="-O0"
        fi

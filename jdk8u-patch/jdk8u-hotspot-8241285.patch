@@ -1,7 +1,7 @@
 diff --git a/make/linux/makefiles/gcc.make b/make/linux/makefiles/gcc.make
 --- a/make/linux/makefiles/gcc.make
 +++ b/make/linux/makefiles/gcc.make
-@@ -201,7 +201,9 @@
+@@ -202,7 +202,9 @@
  endif
  
  # Compiler warnings are treated as errors

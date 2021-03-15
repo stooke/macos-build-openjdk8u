@@ -5,24 +5,23 @@
    # Xcode version will be validated later
    AC_ARG_WITH([xcode-path], [AS_HELP_STRING([--with-xcode-path],
 -      [explicit path to Xcode 4 (generally for building on 10.9 and later)])],
-+      [explicit path to Xcode (Xcode 4 is supported; generally for building on 10.9 and later)])],
++      [explicit path to Xcode installation])],
        [XCODE_PATH=$with_xcode_path]
    )
  
 --- old/common/autoconf/generated-configure.sh	2019-06-27 16:38:53.000000000 -0400
 +++ new/common/autoconf/generated-configure.sh	2019-06-27 16:38:52.000000000 -0400
-@@ -1897,8 +1897,8 @@
+@@ -1897,8 +1897,7 @@
    --with-toolchain-path   prepend these directories when searching for
                            toolchain binaries (compilers etc)
    --with-extra-path       prepend these directories to the default path
 -  --with-xcode-path       explicit path to Xcode 4 (generally for building on
 -                          10.9 and later)
-+  --with-xcode-path       explicit path to Xcode (Xcode 4 is supported;
-+                          generally for building on 10.9 and later)
++  --with-xcode-path       explicit path to Xcode application
    --with-conf-name        use this as the name of the configuration [generated
                            from important configuration options]
    --with-builddeps-conf   use this configuration file for the builddeps
-@@ -26782,7 +26783,7 @@
+@@ -26789,7 +26792,7 @@
  $as_echo_n "checking Determining if we need to set DEVELOPER_DIR... " >&6; }
      if test -n "$DEVELOPER_DIR"; then
        if test ! -d "$DEVELOPER_DIR"; then
@@ -31,7 +30,7 @@
        fi
        if test ! -f "$DEVELOPER_DIR"/usr/bin/xcodebuild; then
          as_fn_error $? "Xcode Developer path is not valid: $DEVELOPER_DIR, it must point to Contents/Developer inside an Xcode application bundle" "$LINENO" 5
-@@ -26845,8 +26847,8 @@
+@@ -26852,8 +26854,8 @@
      # Fail-fast: verify we're building on Xcode 4, we cannot build with Xcode 5 or later
      XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )

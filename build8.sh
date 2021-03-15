@@ -3,7 +3,7 @@
 set -e
 
 BUILD_LOG="LOG=debug"
-BUILD_MODE=normal
+BUILD_MODE=dev
 TEST_JDK=false
 BUILD_JAVAFX=true
 
@@ -160,6 +160,9 @@ patch_macos_jdkbuild() {
 	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-8043646.patch"
 
 	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
+
+	# VrifyFixClassname appears in no header files
+	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-verifyfixclassname.patch"
 }
 
 patch_macos_jdkquality() {
@@ -302,20 +305,25 @@ progress() {
 }
 
 #### build the world
-
-progress "download tools"
+progress "building in $JDK_DIR"
 
 set_os
 
-if $IS_DARWIN ; then
-	. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
-else
-	. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype webrev jtreg
-fi
+download_tools() {
+	progress "download tools"
+
+	if $IS_DARWIN ; then
+		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
+	else
+		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype webrev jtreg
+	fi
+}
 
 JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
-revertjdk
+# must always download tools to set paths properly
+download_tools
+
 downloadjdksrc
 print_jdk_repo_id
 cleanjdk

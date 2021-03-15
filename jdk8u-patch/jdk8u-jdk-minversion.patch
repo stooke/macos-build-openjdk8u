@@ -1,6 +1,6 @@
 --- old/make/lib/CoreLibraries.gmk	2019-06-27 16:39:13.000000000 -0400
 +++ new/make/lib/CoreLibraries.gmk	2019-06-27 16:39:13.000000000 -0400
-@@ -410,6 +410,7 @@
+@@ -409,6 +409,7 @@
  
  ifeq ($(OPENJDK_TARGET_OS), macosx)
    LIBJLI_CFLAGS += -DPACKAGE_PATH=\"$(PACKAGE_PATH)\"
@@ -8,7 +8,7 @@
  endif
  
  ifneq ($(USE_EXTERNAL_LIBZ), true)
-@@ -443,7 +444,7 @@
+@@ -442,7 +443,7 @@
          $(call SET_SHARED_LIBRARY_ORIGIN), \
      LDFLAGS_linux := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \
      LDFLAGS_solaris := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \
@@ -17,7 +17,7 @@
      LDFLAGS_SUFFIX_solaris := $(LIBZ) $(LIBDL) -lc, \
      LDFLAGS_SUFFIX_linux := $(LIBZ) $(LIBDL) -lc -lpthread, \
      LDFLAGS_SUFFIX_aix := $(LIBZ) $(LIBDL),\
-@@ -504,7 +505,7 @@
+@@ -503,7 +504,7 @@
        LANG := C, \
        OPTIMIZATION := HIGH, \
        CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS), \
