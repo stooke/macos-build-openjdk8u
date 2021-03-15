@@ -1,4 +1,4 @@
-# Compiling jdk8u using on Big Sur using Xcode 12
+# Compiling OpenJDK8u on Big Sur using Xcode 12
 
 How to compile JDK 8 with the latest Xcode on the latest macOS.
 
