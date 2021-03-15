@@ -1,4 +1,4 @@
-# Compiling jdk8u using XCode 9, 10 or 11
+# Compiling OpenJDK8u on Big Sur using Xcode 12
 
 How to compile JDK 8 with the latest Xcode on the latest macOS.
 
@@ -19,7 +19,8 @@ The easiest way to get a working JDK8u is:
 ```
 
 ### Caveats:
-- This patch only works with XCode 9, 10 or 11.
+- This patch only works with XCode 9, 10, 11 or 12. (Actually 9-11 have not been tested recently)
+- Some of the patches included apply with offsets, etc.
 - This patch will produce a JDK that runs on macOS 10.9 and above; the original code runs on macOS 10.7 and above.
 - The resultant JDK has not been run through TCK, but can be used to build Graal.
 
@@ -33,7 +34,7 @@ Clone this repo and run _build8_.  You may edit this script to build jdk8u-dev w
 
 Some of these are also required for building JDK 11, so your efforts won't be wasted here.  The build script will download and install these (except for Xcode; that one's on you) in a local location, so no action is required if you use these scripts
 
-Install XCode 9, 10 or 11, autoconf, freetype and mercurial.
+Install XCode 9, 10, 11, 12 autoconf, freetype and mercurial.
 Install a bootstrap JDK; either JDK 7 or JDK 8.  
 If you have a system JDK 8 installed, the build should find it, but it should be ignored if you use build8.sh.
 
