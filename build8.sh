@@ -138,8 +138,10 @@ patch_macos_jdkbuild() {
 
 	# fix some help messages and Xcode version checks
 	applypatch . "$PATCH_DIR/jdk8u-buildfix1.patch"
+
 	# use correct C++ standard library
 	#applypatch . "$PATCH_DIR/jdk8u-libcxxfix.patch"
+
 	# misc clang-specific cleanup
 	applypatch . "$PATCH_DIR/jdk8u-buildfix2.patch"
 
@@ -157,9 +159,6 @@ patch_macos_jdkbuild() {
 
 	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
 
-	# VerifyFixClassname appears in no header files
-	#applypatch jdk     "$PATCH_DIR/jdk8u-jdk-verifyfixclassname.patch"
-
 	# c99 and macosx fixes
 	applypatch . "$PATCH_DIR/jdk8u-c99.patch"
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-c99.patch"
@@ -168,17 +167,10 @@ patch_macos_jdkbuild() {
 
 patch_macos_jdkquality() {
 	progress "patch jdk test failures"
-	# fix concurrency crash; this patch is now in the JDK
-	#  applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8181872.patch"
-	# these patches mitigate a clang issue by avoding intrinsic strncat()
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-01-8062370.patch"
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-02-8060721.patch"
+
 	# disable optimization on some files when using clang 
 	# (should check if this is still tha case on newer clang)
 	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8138820.patch"
-
-	# this is 8062370 and 8060721 together, so it won't apply if those have been applied
-	#   applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-metaspace.patch"
 
 	# this patch is incomplete in 8u; it doesn't properly access some test support classes:
 	#   applypatch jdk "$PATCH_DIR/jdk8u-jdk-8210403.patch"

@@ -85,7 +85,7 @@ clone_or_update() {
 }
 
 build_ant() {
-	download_and_open http://apache.mirror.gtcomm.net/ant/binaries/apache-ant-1.10.6-bin.tar.gz "$TOOL_DIR/ant"
+	download_and_open https://mirror.dsrg.utoronto.ca/apache//ant/binaries/apache-ant-1.10.9-bin.tar.gz "$TOOL_DIR/ant"
 }
 
 build_autoconf() {
@@ -134,7 +134,7 @@ build_mvn() {
 	if test -d "$TOOL_DIR/apache-maven"; then
 		return
 	fi
-	download_and_open http://muug.ca/mirror/apache-dist/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.tar.gz "$TOOL_DIR/apache-maven"
+	download_and_open https://mirror.dsrg.utoronto.ca/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz "$TOOL_DIR/apache-maven"
 }
 
 build_mx() {
