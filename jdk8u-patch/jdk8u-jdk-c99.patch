@@ -1,0 +1,173 @@
+diff --git a/src/macosx/native/apple/applescript/AppleScriptExecutionContext.m b/src/macosx/native/apple/applescript/AppleScriptExecutionContext.m
+--- a/src/macosx/native/apple/applescript/AppleScriptExecutionContext.m
++++ b/src/macosx/native/apple/applescript/AppleScriptExecutionContext.m
+@@ -29,6 +29,7 @@
+ 
+ #import "AS_NS_ConversionUtils.h"
+ 
++#include <pthread.h>
+ 
+ @implementation AppleScriptExecutionContext
+ 
+diff --git a/src/macosx/native/sun/osxapp/ThreadUtilities.h b/src/macosx/native/sun/osxapp/ThreadUtilities.h
+--- a/src/macosx/native/sun/osxapp/ThreadUtilities.h
++++ b/src/macosx/native/sun/osxapp/ThreadUtilities.h
+@@ -26,7 +26,7 @@
+ #ifndef __THREADUTILITIES_H
+ #define __THREADUTILITIES_H
+ 
+-#import <pthread.h>
++#include <pthread.h>
+ 
+ #import "AWT_debug.h"
+ 
+diff --git a/src/share/instrument/JarFacade.c b/src/share/instrument/JarFacade.c
+--- a/src/share/instrument/JarFacade.c
++++ b/src/share/instrument/JarFacade.c
+@@ -23,7 +23,7 @@
+  * questions.
+  */
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(MACOSX)
+ /*
+  * Win* needs this include. However, Linux and Solaris do not.
+  * Having this include on Solaris SPARC breaks having non US-ASCII
+diff --git a/src/share/native/com/sun/media/sound/PlatformMidi.c b/src/share/native/com/sun/media/sound/PlatformMidi.c
+--- a/src/share/native/com/sun/media/sound/PlatformMidi.c
++++ b/src/share/native/com/sun/media/sound/PlatformMidi.c
+@@ -29,6 +29,10 @@
+ 
+ #include "PlatformMidi.h"
+ 
++#if defined(MACOSX)
++#include <stdlib.h>
++#endif
++
+ char* GetInternalErrorStr(INT32 err) {
+     switch (err) {
+     case MIDI_SUCCESS:          return "";
+diff --git a/src/share/native/sun/misc/URLClassPath.c b/src/share/native/sun/misc/URLClassPath.c
+--- a/src/share/native/sun/misc/URLClassPath.c
++++ b/src/share/native/sun/misc/URLClassPath.c
+@@ -23,6 +23,10 @@
+  * questions.
+  */
+ 
++#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
++#include <stdlib.h>
++#endif
++
+ #include <string.h>
+ 
+ #include "jni.h"
+@@ -31,6 +35,13 @@
+ #include "jvm.h"
+ #include "jdk_util.h"
+ 
++/* defined in libverify.so/verify.dll (src file common/check_format.c) */
++extern jboolean
++VerifyClassname(char *utf_name, jboolean arrayAllowed);
++
++extern jboolean
++VerifyFixClassname(char *utf_name);
++
+ #include "sun_misc_URLClassPath.h"
+ 
+ extern char*
+diff --git a/src/share/native/sun/security/krb5/nativeccache.c b/src/share/native/sun/security/krb5/nativeccache.c
+--- a/src/share/native/sun/security/krb5/nativeccache.c
++++ b/src/share/native/sun/security/krb5/nativeccache.c
+@@ -26,6 +26,11 @@
+ #import "sun_security_krb5_Credentials.h"
+ #import <Kerberos/Kerberos.h>
+ 
++#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
++# include <string.h>
++# include <time.h>
++#endif
++
+ /*
+  * Based largely on klist.c,
+  *
+diff --git a/src/share/native/sun/security/pkcs11/j2secmod.h b/src/share/native/sun/security/pkcs11/j2secmod.h
+--- a/src/share/native/sun/security/pkcs11/j2secmod.h
++++ b/src/share/native/sun/security/pkcs11/j2secmod.h
+@@ -23,6 +23,9 @@
+  * questions.
+  */
+ 
++#if !defined(J2SECMOD_HDR_INCLUDED)
++#define J2SECMOD_HDR_INCLUDED 1
++
+ #include <jni.h>
+ 
+ #include "sun_security_pkcs11_Secmod.h"
+@@ -81,3 +84,6 @@
+     SECMODModuleList    *next;
+     SECMODModule        *module;
+ };
++
++#endif //!J2SECMOD_HDR_INCLUDED
++
+diff --git a/src/share/native/sun/security/pkcs11/wrapper/pkcs11wrapper.h b/src/share/native/sun/security/pkcs11/wrapper/pkcs11wrapper.h
+--- a/src/share/native/sun/security/pkcs11/wrapper/pkcs11wrapper.h
++++ b/src/share/native/sun/security/pkcs11/wrapper/pkcs11wrapper.h
+@@ -55,6 +55,9 @@
+  * @author Martin Schlaeffer <schlaeff@sbox.tugraz.at>
+  */
+ 
++#if !defined(PKS11WRAPPER_HDR_INCLUDED)
++#define PKS11WRAPPER_HDR_INCLUDED 1
++
+ /* disable asserts in product mode */
+ #ifndef DEBUG
+   #ifndef NDEBUG
+@@ -476,3 +479,6 @@
+ #define free(c)         (p11free((c), THIS_FILE, __LINE__))
+ 
+ #endif
++
++#endif //!PKS11WRAPPER_HDR_INCLUDED
++
+diff --git a/src/solaris/native/sun/management/MacosxOperatingSystem.c b/src/solaris/native/sun/management/MacosxOperatingSystem.c
+--- a/src/solaris/native/sun/management/MacosxOperatingSystem.c
++++ b/src/solaris/native/sun/management/MacosxOperatingSystem.c
+@@ -28,6 +28,7 @@
+ #include <sys/time.h>
+ #include <mach/mach.h>
+ #include <mach/task_info.h>
++#include "jvm.h"
+ 
+ 
+ JNIEXPORT jdouble JNICALL
+diff --git a/src/solaris/native/sun/security/pkcs11/j2secmod_md.c b/src/solaris/native/sun/security/pkcs11/j2secmod_md.c
+--- a/src/solaris/native/sun/security/pkcs11/j2secmod_md.c
++++ b/src/solaris/native/sun/security/pkcs11/j2secmod_md.c
+@@ -32,6 +32,7 @@
+ #include <jni_util.h>
+ 
+ #include "j2secmod.h"
++#include "pkcs11wrapper.h"
+ 
+ void *findFunction(JNIEnv *env, jlong jHandle, const char *functionName) {
+     void *hModule = (void*)jlong_to_ptr(jHandle);
+diff --git a/src/solaris/native/sun/security/pkcs11/wrapper/p11_md.h b/src/solaris/native/sun/security/pkcs11/wrapper/p11_md.h
+--- a/src/solaris/native/sun/security/pkcs11/wrapper/p11_md.h
++++ b/src/solaris/native/sun/security/pkcs11/wrapper/p11_md.h
+@@ -54,6 +54,9 @@
+  * @author Karl Scheibelhofer <Karl.Scheibelhofer@iaik.at>
+  */
+ 
++#if !defined(P11_MD_HDR_INCLUDED)
++#define P11_MD_HDR_INCLUDED 1
++
+ /* defines for UNIX platforms *************************************************/
+ 
+ #define CK_PTR *
+@@ -83,3 +86,5 @@
+ 
+ };
+ typedef struct ModuleData ModuleData;
++
++#endif //!P11_MD_HDR_INCLUDED

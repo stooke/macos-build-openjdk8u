@@ -1,0 +1,68 @@
+diff --git a/common/autoconf/generated-configure.sh b/common/autoconf/generated-configure.sh
+--- a/common/autoconf/generated-configure.sh
++++ b/common/autoconf/generated-configure.sh
+@@ -1897,7 +1897,7 @@
+   --with-toolchain-path   prepend these directories when searching for
+                           toolchain binaries (compilers etc)
+   --with-extra-path       prepend these directories to the default path
+-  --with-xcode-path       explicit path to Xcode application
++  --with-xcode-path       explicit path to Xcode installation
+   --with-conf-name        use this as the name of the configuration [generated
+                           from important configuration options]
+   --with-builddeps-conf   use this configuration file for the builddeps
+@@ -4393,7 +4393,7 @@
+ #CUSTOM_AUTOCONF_INCLUDE
+ 
+ # Do not change or remove the following line, it is needed for consistency checks:
+-DATE_WHEN_GENERATED=1613496357
++DATE_WHEN_GENERATED=1615817520
+ 
+ ###############################################################################
+ #
+@@ -25368,7 +25368,7 @@
+   VALID_TOOLCHAINS=${!toolchain_var_name}
+ 
+   if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+-   # On Mac OS X, default toolchain to clang after Xcode 5
++    # On Mac OS X, default toolchain to clang after Xcode 5
+     XCODE_VERSION_OUTPUT=`xcodebuild -version 2>&1 | $HEAD -n 1`
+     $ECHO "$XCODE_VERSION_OUTPUT" | $GREP "Xcode " > /dev/null
+     if test $? -ne 0; then
+@@ -26853,7 +26853,7 @@
+     # Fail-fast: verify we're building on Xcode 4, we cannot build with Xcode 5 or later
+     XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
+     XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
+-    if test "${XC_VERSION_PARTS[0]}" != "4" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10" -a "${XC_VERSION_PARTS[0]}" != "11"  -a "${XC_VERSION_PARTS[0]}" != "12" ; then
++    if test "${XC_VERSION_PARTS[0]}" != "4" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10" -a "${XC_VERSION_PARTS[0]}" != "11" -a "${XC_VERSION_PARTS[0]}" != "12" ; then
+       as_fn_error $? "Xcode 4, 9-12 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select." "$LINENO" 5
+     fi
+ 
+@@ -26897,9 +26897,9 @@
+ 
+     # These always need to be set, or we can't find the frameworks embedded in JavaVM.framework
+     # setting this here means it doesn't have to be peppered throughout the forest
+-    CFLAGS_JDK="$CFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
+-    CXXFLAGS_JDK="$CXXFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
+-    LDFLAGS_JDK="$LDFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
++ #   CFLAGS_JDK="$CFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
++ #   CXXFLAGS_JDK="$CXXFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
++ #   LDFLAGS_JDK="$LDFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
+   fi
+ 
+   # For solaris we really need solaris tools, and not the GNU equivalent.
+diff --git a/common/autoconf/toolchain.m4 b/common/autoconf/toolchain.m4
+--- a/common/autoconf/toolchain.m4
++++ b/common/autoconf/toolchain.m4
+@@ -330,9 +330,9 @@
+     
+     # These always need to be set, or we can't find the frameworks embedded in JavaVM.framework
+     # setting this here means it doesn't have to be peppered throughout the forest
+-    CFLAGS_JDK="$CFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
+-    CXXFLAGS_JDK="$CXXFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
+-    LDFLAGS_JDK="$LDFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
++ #   CFLAGS_JDK="$CFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
++ #   CXXFLAGS_JDK="$CXXFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
++ #   LDFLAGS_JDK="$LDFLAGS_JDK -F\"$SDKPATH/System/Library/Frameworks/JavaVM.framework/Frameworks\""
+   fi
+ 
+   # For solaris we really need solaris tools, and not the GNU equivalent.

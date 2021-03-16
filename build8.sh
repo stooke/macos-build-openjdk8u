@@ -159,6 +159,11 @@ patch_macos_jdkbuild() {
 
 	# VerifyFixClassname appears in no header files
 	#applypatch jdk     "$PATCH_DIR/jdk8u-jdk-verifyfixclassname.patch"
+
+	# c99 and macosx fixes
+	applypatch . "$PATCH_DIR/jdk8u-c99.patch"
+	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-c99.patch"
+	applypatch jdk "$PATCH_DIR/jdk8u-jdk-c99.patch"
 }
 
 patch_macos_jdkquality() {

@@ -1,0 +1,24 @@
+diff --git a/make/bsd/makefiles/saproc.make b/make/bsd/makefiles/saproc.make
+--- a/make/bsd/makefiles/saproc.make
++++ b/make/bsd/makefiles/saproc.make
+@@ -79,7 +79,7 @@
+       SA_SYSROOT_FLAGS += -isysroot "$(SDKPATH)" -iframework"$(SDKPATH)/System/Library/Frameworks"
+     endif
+     # always needed, even if SDKPATH is empty
+-    SA_SYSROOT_FLAGS += -F"$(SDKPATH)/System/Library/Frameworks/JavaVM.framework/Frameworks"
++ #   SA_SYSROOT_FLAGS += -F"$(SDKPATH)/System/Library/Frameworks/JavaVM.framework/Frameworks"
+   else
+     SASRCFILES = $(SASRCDIR)/StubDebuggerLocal.c
+     SALIBS = 
+diff --git a/src/os_cpu/bsd_x86/vm/os_bsd_x86.cpp b/src/os_cpu/bsd_x86/vm/os_bsd_x86.cpp
+--- a/src/os_cpu/bsd_x86/vm/os_bsd_x86.cpp
++++ b/src/os_cpu/bsd_x86/vm/os_bsd_x86.cpp
+@@ -846,7 +846,7 @@
+   *size = pthread_get_stacksize_np(self);
+   // workaround for OS X 10.9.0 (Mavericks)
+   // pthread_get_stacksize_np returns 128 pages even though the actual size is 2048 pages
+-  if (pthread_main_np() == 1) {
++  if (::pthread_main_np() == 1) {
+     if ((*size) < (DEFAULT_MAIN_THREAD_STACK_PAGES * (size_t)getpagesize())) {
+       char kern_osrelease[256];
+       size_t kern_osrelease_size = sizeof(kern_osrelease);
