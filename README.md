@@ -1,13 +1,11 @@
-# Compiling OpenJDK8u on Big Sur using Xcode 12
+# Compiling OpenJDK 8u on Big Sur using Xcode 12
 
 How to compile JDK 8 with the latest Xcode on the latest macOS.
 
-Currently (September 2019), openjdk jdk8u can only be compiled with XCode 4, which won't run on the latest macOS.
+Currently (March 2021), OpenJDK jdk8u can only be compiled with Xcode 4, which won't run on the latest macOS.
 This repo contains patches and information for setting up an environment to compile a JDK using the very latest tools.
 
-By default, build8.sh will build a JDK without Shenandoah GC or JavaFX.  Edit the script to turn on these if you need them, or set environment variables (as seen at the top of the script).
-
-A version of this patch has been submitted to the jdk8u-dev mailing list.
+This patch can build an x86_64 jdk on eithea an Intel or aarch64 Mac, but cannot yet build a native aarch64 JDK.
 
 ### Quick start:
 
