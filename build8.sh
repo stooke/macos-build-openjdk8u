@@ -7,6 +7,18 @@ BUILD_MODE=dev
 TEST_JDK=false
 BUILD_JAVAFX=false
 
+# aarch64 does not work yet - only x86_64
+BUILD_TARGET_ARCH=x86_64
+
+# if we're on a macos m1 machine, we can run in x86_64 or native aarch64/arm64 mode.
+# currently the build script only supports building x86_64 binaries and only on x86_64 hosts.
+if [ "`uname`" = "Darwin" ] ; then
+	if [ "`uname -m`" = "arm64" ] ; then
+		echo "building on aarch64 - restarting in x86_64 mode"
+		arch -x86_64 "$0" $@
+		exit $?
+	fi
+fi
 
 if [ "X$BUILD_MODE" == "X" ] ; then
 	# normal, dev, shenandoah, [jvmci, eventually]
@@ -80,9 +92,9 @@ popd
 SUBREPOS="corba hotspot jaxp jaxws jdk langtools nashorn"
 
 if $IS_DARWIN ; then
-	JDK_CONF=macosx-x86_64-normal-server-$DEBUG_LEVEL
+	JDK_CONF=macosx-${BUILD_TARGET_ARCH}-normal-server-$DEBUG_LEVEL
 else
-	JDK_CONF=linux-x86_64-normal-server-$DEBUG_LEVEL
+	JDK_CONF=linux-${BUILD_TARGET_ARCH}-normal-server-$DEBUG_LEVEL
 fi
 
 ### JDK
@@ -306,6 +318,7 @@ set_os
 download_tools() {
 	progress "download tools"
 
+	export BUILD_TARGET_ARCH
 	if $IS_DARWIN ; then
 		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
 	else
@@ -318,11 +331,11 @@ JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 # must always download tools to set paths properly
 download_tools
 
-downloadjdksrc
-print_jdk_repo_id
-cleanjdk
-revertjdk
-patch_jdk
+#downloadjdksrc
+#print_jdk_repo_id
+#cleanjdk
+#revertjdk
+#patch_jdk
 configurejdk
 buildjdk
 
@@ -350,5 +363,4 @@ else
 	zip -r "$ZIP_NAME" .
 	popd
 fi
-
 
