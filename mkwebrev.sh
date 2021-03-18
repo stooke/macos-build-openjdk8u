@@ -84,5 +84,5 @@ revert() {
 #cd "$REPO_DIR/jdk"
 #hg import -f --no-commit "$BUILD_DIR/8181872-jdk8.patch"
 
-mkrevs 8144125-jdk8u 01
+mkrevs 8144125-jdk8u 00
 

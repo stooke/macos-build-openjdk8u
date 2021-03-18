@@ -2,13 +2,13 @@
 
 set -x
 
-# define buuld environment
+# define build environment
 BUILD_DIR=`pwd`
 pushd `dirname $0`
 SCRIPT_DIR=`pwd`
 popd
 TOOL_DIR="$BUILD_DIR/tools"
-JDK_DIR="$BUILD_DIR/jdk8-shenandoah/build/macosx-x86_64-normal-server-fastdebug/images/j2sdk-image"
+JDK_DIR=$BUILD_DIR/$JDKBASE
 
 # version is either jmc or jmc7
 JMC_VERSION=jmc7
