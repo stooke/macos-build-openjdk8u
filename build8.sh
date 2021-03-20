@@ -252,7 +252,7 @@ configurejdk() {
 		DARWIN_CONFIG="--with-toolchain-type=clang \
             --with-xcode-path="$XCODE_APP" \
             --includedir="$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include" \
-            --with-boot-jdk="$BOOT_JDK"
+            --with-boot-jdk="$BOOT_JDK""
 	fi
     if $BUILD_JAVAFX ; then
         # the javafx build requires 1.8.0-b40 or higher
