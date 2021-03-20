@@ -331,11 +331,11 @@ JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 # must always download tools to set paths properly
 download_tools
 
-#downloadjdksrc
-#print_jdk_repo_id
-#cleanjdk
-#revertjdk
-#patch_jdk
+downloadjdksrc
+print_jdk_repo_id
+cleanjdk
+revertjdk
+patch_jdk
 configurejdk
 buildjdk
 
