@@ -129,7 +129,7 @@ build_cmake() {
 		if test -d "$TOOL_DIR/cmake" ; then 
 			return
 		fi
-		download_and_open https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Darwin-x86_64.tar.gz "$TOOL_DIR/cmake"
+		download_and_open https://github.com/Kitware/CMake/releases/download/v3.19.7/cmake-3.19.7-macos-universal.tar.gz "$TOOL_DIR/cmake"
 	fi
 }
 

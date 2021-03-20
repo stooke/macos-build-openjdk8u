@@ -13,7 +13,6 @@ BUILD_TARGET_ARCH=x86_64
 BUILD_TARGET_ARCH=arm64
 BUILD_COMPILE_ARCH="`uname -m`"
 
-
 # if we're on a macos m1 machine, we can run in x86_64 or native aarch64/arm64 mode.
 # currently the build script only supports building x86_64 binaries and only on x86_64 hosts.
 if [ "`uname`" = "Darwin" ] ; then
@@ -29,7 +28,7 @@ if [ "$BUILD_TARGET_ARCH" != "$BUILD_COMPILE_ARCH" ] ; then
 fi
 
 if [ "X$BUILD_MODE" == "X" ] ; then
-	# normal, dev, shenandoah, [jvmci, eventually]
+	# normal, dev, shenandoah
 	BUILD_MODE=normal
 fi
 
@@ -258,8 +257,8 @@ configurejdk_arm64() {
 	#fi
 	pushd "$JDK_DIR"
 	chmod 755 ./configure
-	unset DARWIN_CONFIG
 	#./configure --help
+	unset DARWIN_CONFIG
 	if $IS_DARWIN ; then
 		BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
 		DARWIN_CONFIG="--with-toolchain-type=clang \
@@ -292,8 +291,8 @@ configurejdk_x86_64() {
 	#fi
 	pushd "$JDK_DIR"
 	chmod 755 ./configure
-	unset DARWIN_CONFIG
 	#./configure --help
+	unset DARWIN_CONFIG
 	if $IS_DARWIN ; then
 		BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
 		DARWIN_CONFIG="--with-toolchain-type=clang \
