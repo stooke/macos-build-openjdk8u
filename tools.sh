@@ -11,6 +11,13 @@ set_os() {
 	IS_DARWIN=false
 	if [ "`uname`" = "Darwin" ] ; then
 		IS_DARWIN=true
+        	if [ "`uname -m`" = "arm64" ] ; then
+			RUN_AS_AARCH64="arch -xarm64"
+			RUN_AS_X86_64="arch -x86_64"
+		else
+			RUN_AS_AARCH64="echo *** cannot run arm code on intel hardware *** ; exit 99 ; "
+			RUN_AS_X86_64=""
+        	fi
 	fi
 }
 
@@ -127,7 +134,15 @@ build_cmake() {
 }
 
 build_libtool() {
-	echo libtool is already in macOS
+	echo libtool is already in macOS but libtoolize isnt
+	download_and_open https://ftp.wayne.edu/gnu/libtool/libtool-2.4.tar.gz "$TOOL_DIR/libtool"
+	pushd "$TOOL_DIR/libtool"
+	./configure --prefix="$TOOL_DIR/local"
+	make install
+	cd "$TOOL_DIR/local/bin"
+	# freetype autogen.sh expectes glibtoolize
+	ln -s libtoolize glibtoolize
+	popd
 }
 
 build_mvn() {
@@ -151,10 +166,17 @@ build_freetype() {
 	if test -d "$TOOL_DIR/freetype" ; then
 		return
 	fi
-	download_and_open https://nongnu.freemirror.org/nongnu/freetype/freetype-2.9.tar.gz "$TOOL_DIR/freetype"
+	#download_and_open https://nongnu.freemirror.org/nongnu/freetype/freetype-2.9.tar.gz "$TOOL_DIR/freetype"
+	clone_or_update https://gitlab.freedesktop.org/freetype/freetype.git "$TOOL_DIR/freetype"
 	pushd "$TOOL_DIR/freetype"
-	./configure
-	make
+	git checkout "VER-2-10-4"
+	./autogen.sh
+	## use this for same arch
+	#./configure --prefix="$TOOL_DIR/local"
+	## cross compile to arm64 host
+	./configure --prefix="$TOOL_DIR/local" --host=arm-apple-darwin --enable-static=yes  "CFLAGS=-arch arm64 -pipe -std=c99 -O2" "LDFLAGS=-arch arm64"
+
+make install
     if $IS_DARWIN ; then
 set -x
 	cd objs/.libs

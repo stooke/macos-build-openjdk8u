@@ -7,17 +7,25 @@ BUILD_MODE=dev
 TEST_JDK=false
 BUILD_JAVAFX=false
 
-# aarch64 does not work yet - only x86_64
+# arm64 does not work yet - only x86_64
+BUILD_TARGET_ARCH="`uname -m`"
 BUILD_TARGET_ARCH=x86_64
+BUILD_TARGET_ARCH=arm64
+BUILD_COMPILE_ARCH="`uname -m`"
+
 
 # if we're on a macos m1 machine, we can run in x86_64 or native aarch64/arm64 mode.
 # currently the build script only supports building x86_64 binaries and only on x86_64 hosts.
 if [ "`uname`" = "Darwin" ] ; then
-	if [ "`uname -m`" = "arm64" ] ; then
-		echo "building on aarch64 - restarting in x86_64 mode"
+	if [ "`uname -m`" = "arm64" -a "$BUILD_TARGET_ARCH" = "x86_64" ] ; then
+		echo "building on arm64 - restarting in x86_64 mode - building using Rosetta"
 		arch -x86_64 "$0" $@
 		exit $?
 	fi
+fi
+
+if [ "$BUILD_TARGET_ARCH" != "$BUILD_COMPILE_ARCH" ] ; then
+	echo "cross-compiling from $BUILD_COMPILE_ARCH to $BUILD_TARGET_ARCH"
 fi
 
 if [ "X$BUILD_MODE" == "X" ] ; then
@@ -79,6 +87,10 @@ elif [ "$BUILD_MODE" == "jvmci" ] ; then
 	BUILD_MODE=dev
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
 	JDK_DIR="$BUILD_DIR/$JDK_BASE-jvmci"
+fi
+
+if [ "$BUILD_TARGET_ARCH" = "arm64" ] ; then
+	JDK_REPO=http://hg.openjdk.java.net/aarch64-port/jdk8u-shenandoah
 fi
 
 # define build environment
@@ -239,7 +251,7 @@ cleanjdk() {
 	find "$JDK_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
 }
 
-configurejdk() {
+configurejdk_arm64() {
 	progress "configure jdk"
 	#if [ $XCODE_VERSION -ge 11 ] ; then
 	#	DISABLE_PCH=--disable-precompiled-headers
@@ -247,6 +259,41 @@ configurejdk() {
 	pushd "$JDK_DIR"
 	chmod 755 ./configure
 	unset DARWIN_CONFIG
+	#./configure --help
+	if $IS_DARWIN ; then
+		BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
+		DARWIN_CONFIG="--with-toolchain-type=clang \
+            --with-xcode-path="$XCODE_APP" \
+--openjdk-target=aarch64-apple-darwin \
+            --includedir="$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include" \
+            --with-boot-jdk="$BOOT_JDK""
+	fi
+    if $BUILD_JAVAFX ; then
+        # the javafx build requires 1.8.0-b40 or higher
+	BUILD_VERSION_CONFIG="--with-build-number=b88 \
+            --with-vendor-name="openjdk" \
+            --with-milestone="ea" \
+            --with-update-version=99"
+    fi
+	CXXFLAGS="-arch arm64" ./configure $DARWIN_CONFIG $BUILD_VERSION_CONFIG \
+            --with-debug-level=$DEBUG_LEVEL \
+            --with-conf-name=$JDK_CONF \
+			--with-native-debug-symbols=external \
+            --with-jtreg="$BUILD_DIR/tools/jtreg" \
+            --with-freetype-include="$TOOL_DIR/freetype/include" \
+            --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs $DISABLE_PCH
+	popd
+}
+
+configurejdk_x86_64() {
+	progress "configure jdk"
+	#if [ $XCODE_VERSION -ge 11 ] ; then
+	#	DISABLE_PCH=--disable-precompiled-headers
+	#fi
+	pushd "$JDK_DIR"
+	chmod 755 ./configure
+	unset DARWIN_CONFIG
+	#./configure --help
 	if $IS_DARWIN ; then
 		BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
 		DARWIN_CONFIG="--with-toolchain-type=clang \
@@ -261,7 +308,7 @@ configurejdk() {
             --with-milestone="ea" \
             --with-update-version=99"
     fi
-	./configure $DARWIN_CONFIG $BUILD_VERSION_CONFIG \
+	CXXFLAGS="-arch arm64" ./configure $DARWIN_CONFIG $BUILD_VERSION_CONFIG \
             --with-debug-level=$DEBUG_LEVEL \
             --with-conf-name=$JDK_CONF \
 			--with-native-debug-symbols=external \
@@ -320,7 +367,7 @@ download_tools() {
 
 	export BUILD_TARGET_ARCH
 	if $IS_DARWIN ; then
-		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
+		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" autoconf mercurial bootstrap_jdk8 webrev jtreg freetype
 	else
 		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype webrev jtreg
 	fi
@@ -337,6 +384,7 @@ cleanjdk
 revertjdk
 patch_jdk
 configurejdk
+configurejdk_$BUILD_TARGET_ARCH
 buildjdk
 
 if $TEST_JDK ; then
