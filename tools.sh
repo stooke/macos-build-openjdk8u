@@ -84,6 +84,19 @@ clone_or_update() {
 	fi	
 }
 
+check_arch() {
+	FILE="$1"
+	ARCH="$2"
+	set +e
+	if [[ "`file \"$FILE\"`" != *"$ARCH"* ]] ; then
+		echo "$FILE is not built for $ARCH"
+		set -e
+		return 1
+	fi
+	set -e
+	return 0
+}
+
 build_ant() {
 	download_and_open https://mirror.dsrg.utoronto.ca/apache/ant/binaries/apache-ant-1.10.9-bin.tar.gz "$TOOL_DIR/ant"
 }
@@ -148,12 +161,13 @@ build_ninja() {
 }
 
 build_freetype() {
-	if test -d "$TOOL_DIR/freetype" ; then
-		return
+	if check_arch  "$TOOL_DIR/freetype/objs/.libs/libfreetype.6.dylib" $BUILD_TARGET_ARCH ; then
+		return 0
 	fi
 	download_and_open https://nongnu.freemirror.org/nongnu/freetype/freetype-2.9.tar.gz "$TOOL_DIR/freetype"
 	pushd "$TOOL_DIR/freetype"
 	./configure
+	make clean
 	make
     if $IS_DARWIN ; then
 set -x

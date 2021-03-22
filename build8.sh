@@ -7,8 +7,17 @@ BUILD_MODE=dev
 TEST_JDK=false
 BUILD_JAVAFX=false
 
+# set to true to alway reconfigure the build (recommended that CLEAN_BUILD also be set true)
+RECONFiGURE_BUILD=true
+
+# set to true to always clean the build
+CLEAN_BUILD=false
+
+# set to true to always revert patches
+REVERT_PATCHES=false
+
 # aarch64 does not work yet - only x86_64
-BUILD_TARGET_ARCH=x86_64
+export BUILD_TARGET_ARCH=x86_64
 
 # if we're on a macos m1 machine, we can run in x86_64 or native aarch64/arm64 mode.
 # currently the build script only supports building x86_64 binaries and only on x86_64 hosts.
@@ -110,7 +119,6 @@ downloadjdksrc() {
 	chmod 755 get_source.sh configure
 	./get_source.sh
 	popd
-	print_jdk_repo_id
 }
 
 print_jdk_repo_id() {
@@ -330,13 +338,33 @@ JDK_IMAGE_DIR="$JDK_DIR/build/$JDK_CONF/images/j2sdk-image"
 
 # must always download tools to set paths properly
 download_tools
+set -x
+if [ ! -d "$JDK_DIR" ]; then
+	echo "no local JDK source repo"
+	downloadjdksrc
+	patch_jdk
+	configurejdk
+	print_jdk_repo_id
+	REVERT_PATCHES=false
+	RECONFIGURE_BUILD=false
+	CLEAN_BUILD=false
+elif [ ! -d "$JDK_DIR/build" ] ; then
+	RECONFIGURE_BUILD=true
+fi
 
-downloadjdksrc
-print_jdk_repo_id
-cleanjdk
-revertjdk
-patch_jdk
-configurejdk
+if $CLEAN_BUILD ; then
+	cleanjdk
+fi
+
+if $REVERT_PATCHES ; then
+	revertjdk
+	patch_jdk
+fi
+
+if [ $RECONFIGURE_BUILD -o $CLEAN_BUILD ] ; then
+	configurejdk
+fi
+
 buildjdk
 
 if $TEST_JDK ; then
