@@ -36,14 +36,15 @@
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
 -    if test ! "${XC_VERSION_PARTS[0]}" = "4"; then
 -      as_fn_error $? "Xcode 4 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode 4 or make Xcode 4 active by using xcode-select." "$LINENO" 5
-+    if test "${XC_VERSION_PARTS[0]}" != "4" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10" -a "${XC_VERSION_PARTS[0]}" != "11"  -a "${XC_VERSION_PARTS[0]}" != "12" ; then
-+      as_fn_error $? "Xcode 4, 9-12 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select." "$LINENO" 5
++    if test "${XC_VERSION_PARTS[0]}" != "4" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10" -a "${XC_VERSION_PARTS[0]}" != "11" -a "${XC_VERSION_PARTS[0]}" != "12" -a "${XC_VERSION_PARTS[0]}" != "13" ; then
++      as_fn_error $? "Xcode 4, 9-13 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select." "$LINENO" 5
      fi
  
      # Some versions of Xcode 5 command line tools install gcc and g++ as symlinks to
  
 --- old/common/autoconf/toolchain.m4	2019-06-27 16:39:01.000000000 -0400
-+++ new/common/autoconf/toolchain.m4	2019-06-27 16:39:01.000000000 -0400
++++ new/common/autoconf/toolchain.m4
+	2019-06-27 16:39:01.000000000 -0400
 @@ -268,7 +268,7 @@
      AC_MSG_CHECKING([Determining if we need to set DEVELOPER_DIR])
      if test -n "$DEVELOPER_DIR"; then
@@ -59,8 +60,8 @@
      XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
 -    if test ! "${XC_VERSION_PARTS[[0]]}" = "4"; then
 -      AC_MSG_ERROR([Xcode 4 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode 4 or make Xcode 4 active by using xcode-select.])
-+    if test "${XC_VERSION_PARTS[[0]]}" != "4" -a "${XC_VERSION_PARTS[[0]]}" != "9" -a "${XC_VERSION_PARTS[[0]]}" != "10" -a "${XC_VERSION_PARTS[[0]]}" != "11" -a "${XC_VERSION_PARTS[[0]]}" != "12" ; then
-+      AC_MSG_ERROR([Xcode 4, 9-12 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
++    if test "${XC_VERSION_PARTS[[0]]}" != "4" -a "${XC_VERSION_PARTS[[0]]}" != "9" -a "${XC_VERSION_PARTS[[0]]}" != "10" -a "${XC_VERSION_PARTS[[0]]}" != "11" -a "${XC_VERSION_PARTS[[0]]}" != "12" -a "${XC_VERSION_PARTS[[0]]}" != "13"; then
++      AC_MSG_ERROR([Xcode 4, 9-13 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
      fi
  
      # Some versions of Xcode 5 command line tools install gcc and g++ as symlinks to

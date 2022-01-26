@@ -8,13 +8,13 @@ TEST_JDK=false
 BUILD_JAVAFX=false
 
 # set to true to alway reconfigure the build (recommended that CLEAN_BUILD also be set true)
-RECONFiGURE_BUILD=true
+RECONFIGURE_BUILD=true
 
 # set to true to always clean the build
-CLEAN_BUILD=false
+CLEAN_BUILD=true
 
 # set to true to always revert patches
-REVERT_PATCHES=false
+REVERT_PATCHES=true
 
 # aarch64 does not work yet - only x86_64
 export BUILD_TARGET_ARCH=x86_64
@@ -67,12 +67,12 @@ set_os() {
 set_os
 
 if [ "$BUILD_MODE" == "normal" ] ; then
-	JDK_BASE=jdk8u
+	JDK_BASE=monojdk8u
 	BUILD_MODE=dev
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
 	JDK_DIR="$BUILD_DIR/$JDK_BASE"
 elif [ "$BUILD_MODE" == "dev" ] ; then
-	JDK_BASE=jdk8u-dev
+	JDK_BASE=monojdk8u-dev
 	BUILD_MODE=dev
 	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
 	JDK_DIR="$BUILD_DIR/$JDK_BASE"
@@ -98,8 +98,6 @@ TOOL_DIR="$BUILD_DIR/tools"
 TMP_DIR="$TOOL_DIR/tmp"
 popd
 
-SUBREPOS="corba hotspot jaxp jaxws jdk langtools nashorn"
-
 if $IS_DARWIN ; then
 	JDK_CONF=macosx-${BUILD_TARGET_ARCH}-normal-server-$DEBUG_LEVEL
 else
@@ -116,19 +114,13 @@ downloadjdksrc() {
 		popd
 	fi
 	pushd "$JDK_DIR"
-	chmod 755 get_source.sh configure
-	./get_source.sh
+	chmod 755 configure
 	popd
 }
 
 print_jdk_repo_id() {
 	pushd "$JDK_DIR"
 	progress "JDK base repo: `hg id`"
-	for a in $SUBREPOS ; do
-		pushd $a
-		progress "JDK $a repo: `hg id`"
-		popd
-	done
 	popd
 }
 
@@ -150,39 +142,44 @@ patch_linux_jdkquality() {
 
 patch_macos_jdkbuild() {
 	progress "patch jdk"
+
+	# only one patch currently enabled!
+	# fix version check to allow Xcode 13
+	applypatch . "$PATCH_DIR/allow-xcode13.patch"
+
 	# JDK-8019470: Changes needed to compile JDK 8 on MacOS with clang compiler
-	applypatch . "$PATCH_DIR/jdk8u-8019470.patch"
+#	applypatch . "$PATCH_DIR/jdk8u-8019470.patch"
 
 	# fix WARNINGS_ARE_ERRORS handling
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8241285.patch"
+#	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8241285.patch"
 
 	# fix some help messages and Xcode version checks
-	applypatch . "$PATCH_DIR/jdk8u-buildfix1.patch"
+#	applypatch . "$PATCH_DIR/jdk8u-buildfix1.patch"
 
 	# use correct C++ standard library
-	#applypatch . "$PATCH_DIR/jdk8u-libcxxfix.patch"
+#	#applypatch . "$PATCH_DIR/jdk8u-libcxxfix.patch"
 
 	# misc clang-specific cleanup
-	applypatch . "$PATCH_DIR/jdk8u-buildfix2.patch"
+#	applypatch . "$PATCH_DIR/jdk8u-buildfix2.patch"
 
 	# misc clang-specific cleanup; doesn't apply cleanly on top of 8019470 
 	# (use -g1 for fastdebug builds)
 	#applypatch . "$PATCH_DIR/jdk8u-buildfix2a.patch"
 
 	# fix for clang crash if base has non-virtual destructor
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8244878.patch"
+#	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8244878.patch"
 	
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-mac.patch"
+#	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-mac.patch"
 
 	# libosxapp.dylib fails to build on Mac OS 10.9 with clang
-	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-8043646.patch"
+#	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-8043646.patch"
 
-	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
+#	applypatch jdk     "$PATCH_DIR/jdk8u-jdk-minversion.patch"
 
 	# c99 and macosx fixes
-	applypatch . "$PATCH_DIR/jdk8u-c99.patch"
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-c99.patch"
-	applypatch jdk "$PATCH_DIR/jdk8u-jdk-c99.patch"
+#	applypatch . "$PATCH_DIR/jdk8u-c99.patch"
+#	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-c99.patch"
+#	applypatch jdk "$PATCH_DIR/jdk8u-jdk-c99.patch"
 }
 
 patch_macos_jdkquality() {
@@ -190,7 +187,7 @@ patch_macos_jdkquality() {
 
 	# disable optimization on some files when using clang 
 	# (should check if this is still tha case on newer clang)
-	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8138820.patch"
+#	applypatch hotspot "$PATCH_DIR/jdk8u-hotspot-8138820.patch"
 
 	# this patch is incomplete in 8u; it doesn't properly access some test support classes:
 	#   applypatch jdk "$PATCH_DIR/jdk8u-jdk-8210403.patch"
@@ -222,29 +219,19 @@ deleteunknown() {
 
 deleteallunknown() {
 	deleteunknown . "$JDK_DIR"
-	for a in $SUBREPOS ; do 
-		deleteunknown $a "$JDK_DIR/$a"
-	done
 }
 
 revertjdk() {
 	cd "$JDK_DIR"
 	hg revert .
-	for a in $SUBREPOS ; do 
-		cd "$JDK_DIR/$a"
-		hg revert .
-	done
 	deleteallunknown
-	cd "$JDK_DIR"
-	find . -name \*.rej -exec rm {} \; -print
- 	find . -name \*.orig -exec rm {} \; -print
+ 	find "$JDK_DIR" -type f -name \*.orig -o -name \*.rej -print -delete
 }
 
 cleanjdk() {
 	progress "clean jdk"
 	rm -fr "$JDK_DIR/build"
-	find "$JDK_DIR" -name \*.rej  -exec rm {} \; 2>/dev/null || true 
-	find "$JDK_DIR" -name \*.orig -exec rm {} \; 2>/dev/null || true
+ 	find "$JDK_DIR" -type f -name \*.orig -o -name \*.rej -print -delete
 }
 
 configurejdk() {
@@ -342,11 +329,9 @@ set -x
 if [ ! -d "$JDK_DIR" ]; then
 	echo "no local JDK source repo"
 	downloadjdksrc
-	patch_jdk
-	configurejdk
 	print_jdk_repo_id
-	REVERT_PATCHES=false
-	RECONFIGURE_BUILD=false
+	REVERT_PATCHES=true
+	RECONFIGURE_BUILD=true
 	CLEAN_BUILD=false
 elif [ ! -d "$JDK_DIR/build" ] ; then
 	RECONFIGURE_BUILD=true
@@ -361,7 +346,7 @@ if $REVERT_PATCHES ; then
 	patch_jdk
 fi
 
-if [ $RECONFIGURE_BUILD -o $CLEAN_BUILD ] ; then
+if [ true -o $RECONFIGURE_BUILD -o $CLEAN_BUILD ] ; then
 	configurejdk
 fi
 
