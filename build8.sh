@@ -67,27 +67,20 @@ set_os() {
 set_os
 
 if [ "$BUILD_MODE" == "normal" ] ; then
-	JDK_BASE=monojdk8u
+	JDK_BASE=jdk8u
 	BUILD_MODE=dev
-	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
+	JDK_REPO=https://github.com/openjdk/$JDK_BASE.git
 	JDK_DIR="$BUILD_DIR/$JDK_BASE"
 elif [ "$BUILD_MODE" == "dev" ] ; then
-	JDK_BASE=monojdk8u-dev
-	BUILD_MODE=dev
-	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
-	JDK_DIR="$BUILD_DIR/$JDK_BASE"
-elif [ "$BUILD_MODE" == "shenandoah" ] ; then
-	JDK_BASE=jdk8
-	BUILD_MODE=dev
-	JDK_REPO=http://hg.openjdk.java.net/shenandoah/$JDK_BASE
-	JDK_DIR="$BUILD_DIR/$JDK_BASE-shenandoah"
-elif [ "$BUILD_MODE" == "jvmci" ] ; then
-# this doesn't work yet
-	echo "BUILDMODE=jvmci is not yet supported by this script"
 	JDK_BASE=jdk8u-dev
 	BUILD_MODE=dev
-	JDK_REPO=http://hg.openjdk.java.net/jdk8u/$JDK_BASE
-	JDK_DIR="$BUILD_DIR/$JDK_BASE-jvmci"
+	JDK_REPO=https://github.com/openjdk/$JDK_BASE.git
+	JDK_DIR="$BUILD_DIR/$JDK_BASE"
+elif [ "$BUILD_MODE" == "shenandoah" ] ; then
+	JDK_BASE=jdk8u
+	BUILD_MODE=dev
+	JDK_REPO=https://github.com/openjdk/shenandoah-jdk8u-dev
+	JDK_DIR="$BUILD_DIR/$JDK_BASE-shenandoah"
 fi
 
 # define build environment
@@ -110,7 +103,7 @@ downloadjdksrc() {
 	if [ ! -d "$JDK_DIR" ]; then
 		progress "clone $JDK_REPO to $JDK_DIR"
 		pushd "$BUILD_DIR"
-		hg clone $JDK_REPO "$JDK_DIR"
+		git clone $JDK_REPO "$JDK_DIR"
 		popd
 	fi
 	pushd "$JDK_DIR"
@@ -120,7 +113,7 @@ downloadjdksrc() {
 
 print_jdk_repo_id() {
 	pushd "$JDK_DIR"
-	progress "JDK base repo: `hg id`"
+	progress "JDK base repo: `git log -1`"
 	popd
 }
 
@@ -211,7 +204,7 @@ patch_jdk() {
 
 deleteunknown() {
 	cd "$2"
-	hg status | grep ^\? | cut -c 3- | while IFS= read -r fn ; do 
+	git status | grep ^\? | cut -c 3- | while IFS= read -r fn ; do 
 		echo deleting "$1/$fn"
 		rm "$fn"
 	done
@@ -223,7 +216,7 @@ deleteallunknown() {
 
 revertjdk() {
 	cd "$JDK_DIR"
-	hg revert .
+	git restore .
 	deleteallunknown
  	find "$JDK_DIR" -type f -name \*.orig -o -name \*.rej -print -delete
 }
@@ -315,7 +308,7 @@ download_tools() {
 
 	export BUILD_TARGET_ARCH
 	if $IS_DARWIN ; then
-		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf mercurial bootstrap_jdk8 webrev jtreg
+		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf bootstrap_jdk8 webrev jtreg
 	else
 		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype webrev jtreg
 	fi
