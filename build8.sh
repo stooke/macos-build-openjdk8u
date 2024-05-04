@@ -14,18 +14,23 @@ RECONFIGURE_BUILD=true
 CLEAN_BUILD=true
 
 # set to true to always revert patches
-REVERT_PATCHES=true
+REVERT_PATCHES=false
 
-# aarch64 does not work yet - only x86_64
-export BUILD_TARGET_ARCH=x86_64
+export BUILD_TARGET_ARCH=arm64
+#export BUILD_TARGET_ARCH=x86_64
 
 # if we're on a macos m1 machine, we can run in x86_64 or native aarch64/arm64 mode.
 # currently the build script only supports building x86_64 binaries and only on x86_64 hosts.
 if [ "`uname`" = "Darwin" ] ; then
-	if [ "`uname -m`" = "arm64" ] ; then
-		echo "building on aarch64 - restarting in x86_64 mode"
-		arch -x86_64 "$0" $@
-		exit $?
+	if [ "`uname -m`" != "$BUILD_TARGET_ARCH" ] ; then
+		if [ "`uname -m`" = "arm64" ] ; then
+			echo "building on ARM - restarting in Intel mode"
+			arch -x86_64 "$0" $@
+			exit $?
+		else
+			echo "running on Intel - can't restart to ARM mode"
+			exit 99
+		fi
 	fi
 fi
 
@@ -87,7 +92,7 @@ fi
 pushd `dirname $0`
 SCRIPT_DIR=`pwd`
 PATCH_DIR="$SCRIPT_DIR/jdk8u-patch"
-TOOL_DIR="$BUILD_DIR/tools"
+TOOL_DIR="$BUILD_DIR/tools_$BUILD_TARGET_ARCH"
 TMP_DIR="$TOOL_DIR/tmp"
 popd
 
@@ -197,7 +202,7 @@ patch_jdk() {
     fi
 
     if $IS_DARWIN ; then
-        patch_macos_jdkbuild
+       echo not done: patch_macos_jdkbuild
 #        patch_macos_jdkquality
     fi
 }
@@ -236,7 +241,7 @@ configurejdk() {
 	chmod 755 ./configure
 	unset DARWIN_CONFIG
 	if $IS_DARWIN ; then
-		BOOT_JDK="$TOOL_DIR/jdk8u/Contents/Home"
+		BOOT_JDK="$TOOL_DIR/jdk8_$BUILD_TARGET_ARCH/Contents/Home"
 		DARWIN_CONFIG="--with-toolchain-type=clang \
             --with-xcode-path="$XCODE_APP" \
             --includedir="$XCODE_DEVELOPER_PREFIX/Toolchains/XcodeDefault.xctoolchain/usr/include" \
@@ -249,11 +254,13 @@ configurejdk() {
             --with-milestone="ea" \
             --with-update-version=99"
     fi
+	#./configure --help
 	./configure $DARWIN_CONFIG $BUILD_VERSION_CONFIG \
             --with-debug-level=$DEBUG_LEVEL \
             --with-conf-name=$JDK_CONF \
 			--with-native-debug-symbols=external \
-            --with-jtreg="$BUILD_DIR/tools/jtreg" \
+            --with-jtreg="$TOOL_DIR/jtreg" \
+			--openjdk-target=aarch64-apple-darwin \
             --with-freetype-include="$TOOL_DIR/freetype/include" \
             --with-freetype-lib=$TOOL_DIR/freetype/objs/.libs $DISABLE_PCH
 	popd
@@ -286,10 +293,10 @@ dojtreg() {
 testjdk() {
 	progress "test jdk"
 	pushd "$JDK_DIR"
-	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_util" 
-	JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_awt" 
-	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="hotspot_tier1"
-	#JT_HOME="$BUILD_DIR/tools/jtreg" make test TEST="jdk_tier1"
+	#JT_HOME="$TOOL_DIR/jtreg" make test TEST="jdk_util" 
+	JT_HOME="$TOOL_DIR/jtreg" make test TEST="jdk_awt" 
+	#JT_HOME="$TOOL_DIR/jtreg" make test TEST="hotspot_tier1"
+	#JT_HOME="$TOOL_DIR/jtreg" make test TEST="jdk_tier1"
 	popd
 }
 
@@ -308,9 +315,9 @@ download_tools() {
 
 	export BUILD_TARGET_ARCH
 	if $IS_DARWIN ; then
-		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype autoconf bootstrap_jdk8 webrev jtreg
+		. "$SCRIPT_DIR/tools.sh" "$TOOL_DIR" freetype autoconf bootstrap_jdk8 jtreg xcode_jnf
 	else
-		. "$SCRIPT_DIR/tools.sh" "$BUILD_DIR/tools" freetype webrev jtreg
+		. "$SCRIPT_DIR/tools.sh" "$TOOL_DIR" freetype jtreg
 	fi
 }
 
@@ -339,7 +346,7 @@ if $REVERT_PATCHES ; then
 	patch_jdk
 fi
 
-if [ true -o $RECONFIGURE_BUILD -o $CLEAN_BUILD ] ; then
+if [ $RECONFIGURE_BUILD -o $CLEAN_BUILD ] ; then
 	configurejdk
 fi
 
@@ -359,7 +366,7 @@ else
 	WITH_JAVAFX_STR=
 fi
 
-ZIP_NAME="$BUILD_DIR/jdk8u$BUILD_MODE$WITH_JAVAFX_STR.zip"
+ZIP_NAME="${BUILD_DIR}/jdk8u${BUILD_TARGET_ARCH}${BUILD_MODE}${WITH_JAVAFX_STR}zip"
 
 if $BUILD_JAVAFX ; then
 	progress "call build_javafx script"
